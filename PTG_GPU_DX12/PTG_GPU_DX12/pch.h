@@ -11,6 +11,10 @@
 
 #define SDL_MAIN_HANDLED
 // TODO: add headers that you want to pre-compile here
+#include <Windows.h>
 #include <SDL.h>
+#include <imgui.h>
+#include <imgui_impl_win32.h>
+#include <imgui_impl_dx12.h>
 
 #endif //PCH_H

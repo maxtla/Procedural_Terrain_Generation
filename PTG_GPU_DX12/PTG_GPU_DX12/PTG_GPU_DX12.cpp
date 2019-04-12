@@ -10,24 +10,48 @@ const unsigned int WND_HEIGHT	= 800;
 SDL_Window * window = NULL;
 SDL_Surface  * screenSurface = NULL;
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 int main()
 {
-
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::StyleColorsClassic();
+	// Build atlas
+	unsigned char* tex_pixels = NULL;
+	int tex_w, tex_h;
+	io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
+	io.DisplaySize = ImVec2(800, 800);
+	io.DeltaTime = 1.0f / 60.0f;
+	
 	if (SDL_Init(SDL_INIT_VIDEO) == 0)
 	{
 		window = SDL_CreateWindow(WND_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WND_WIDTH, WND_HEIGHT, SDL_WINDOW_SHOWN);
+		ImGui_ImplWin32_Init(GetActiveWindow());
+		ImGui_ImplDX12_RenderDrawData();
 		if (window)
 		{
 			screenSurface = SDL_GetWindowSurface(window);
 			SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 255, 0, 0));
+			
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("Test");
+			ImGui::End();
+			ImGui::Render();
+
 			SDL_UpdateWindowSurface(window);
 			SDL_Delay(2000);
 		}
 		SDL_DestroyWindow(window);
 		SDL_Quit();
+		ImGui_ImplWin32_Shutdown();
 	}
 	else
 		SDL_Log("Unable to intialize SDL: %s", SDL_GetError());
+
+	ImGui::DestroyContext();
 
 	return 0;
 }
