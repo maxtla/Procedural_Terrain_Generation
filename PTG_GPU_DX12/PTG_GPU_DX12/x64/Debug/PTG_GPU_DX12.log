@@ -1,3 +1,7 @@
-﻿  PTG_GPU_DX12.cpp
+﻿  pch.cpp
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\imguiwrap.h(30): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+  PTG_GPU_DX12.cpp
+  Renderer.cpp
+  Generating Code...
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Debug\PTG_GPU_DX12.exe
           1 file(s) copied.
