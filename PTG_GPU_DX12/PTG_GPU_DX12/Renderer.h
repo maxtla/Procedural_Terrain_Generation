@@ -20,7 +20,7 @@ namespace D3D12
 		Renderer();
 		~Renderer();
 
-		bool Init(HWND hwnd, UINT width, UINT height);
+		bool Init(AppCtx appCtx);
 		void StartFrame();
 		void EndFrame();
 		void Present(Fence * fence);

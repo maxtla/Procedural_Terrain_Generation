@@ -4,4 +4,6 @@
 #pragma comment(lib, "dxgi.lib")
 #include "pch.h"
 
+AppCtx gAppCtx;
+
 // In general, ignore this file, but keep it around if you are using pre-compiled headers.

@@ -1,15 +1,7 @@
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
-
 #ifndef PCH_H
 #define PCH_H
 
-//SDL and Windows
+//SDL and Windows and commons
 #define SDL_MAIN_HANDLED
 #include <Windows.h>
 #include <SDL.h>
@@ -25,6 +17,35 @@
 
 //ImGui
 #include "ImGuiWrap.h"
+
+//Application
+struct CameraSettings
+{
+	float x = 0.f;
+	float y = 1.f;
+	float z = -1.f;
+
+	float fov = DirectX::XM_PIDIV4; //standard fov
+	float aspectRatio = 1.0f; // W / H = 800U / 800U = 1U 
+	float nearZ = 1.0f;
+	float farZ = 100.f;
+
+	float moveSpeed = 15.f;
+	float rotSpeed = 0.001f;
+};
+
+struct AppCtx
+{
+	std::string wnd_title = "Procedural Terrain Generation with DirectX 12";
+	UINT width		= 800U;
+	UINT height		= 800U;
+	HWND hwnd;
+
+	bool vsync		= false;
+	bool running	= true;
+
+	CameraSettings camSettings;
+};
 
 //Some commonly used functions
 template <class T> inline ULONG SafeRelease(T **ppT)

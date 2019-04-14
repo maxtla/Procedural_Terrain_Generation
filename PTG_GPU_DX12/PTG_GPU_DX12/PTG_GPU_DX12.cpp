@@ -1,13 +1,10 @@
 // PTG_GPU_DX12.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
 #include "pch.h"
 #include "Renderer.h"
+#include "Scene.h"
 
-const char* WND_TITLE = "Procedural Terrain Generation with DirectX 12";
-const unsigned int WND_WIDTH	= 800;
-const unsigned int WND_HEIGHT	= 800;
-
+extern AppCtx gAppCtx;
 //SDL
 SDL_Window * window = NULL;
 
@@ -17,15 +14,16 @@ ImGuiWrap gImGuiWrap;
 
 //Renderer
 D3D12::Renderer * gRenderer = nullptr;
-HWND gHwnd;
 D3D12::Fence * gFence = nullptr;
 
 //Application
-bool run = true;
 bool Initialize();
 void Run();
 void HandleEvent(SDL_Event &e);
 void Shutdown();
+
+//Scene
+Scene gScene;
 
 int main()
 {
@@ -43,14 +41,17 @@ bool Initialize()
 
 	if (SDL_Init(SDL_INIT_VIDEO) == 0)
 	{
-		window = SDL_CreateWindow(WND_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WND_WIDTH, WND_HEIGHT, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow(gAppCtx.wnd_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gAppCtx.width, gAppCtx.height, SDL_WINDOW_SHOWN);
 		if (window)
 		{
-			gHwnd = GetActiveWindow();
-			if (SUCCEEDED(gRenderer->Init(gHwnd, WND_WIDTH, WND_HEIGHT)))
+			gAppCtx.hwnd = GetActiveWindow();
+			if (SUCCEEDED(gRenderer->Init(gAppCtx)))
 			{
 				gFence = gRenderer->MakeFence(0, 1, D3D12_FENCE_FLAG_NONE);
-				gImGuiWrap.Initialize_IMGUI(WND_WIDTH, WND_HEIGHT, gHwnd, gRenderer->GetDevice());
+				gImGuiWrap.Initialize_IMGUI(gAppCtx.width, gAppCtx.height, gAppCtx.hwnd, gRenderer->GetDevice());
+
+				gScene.Initialize(gAppCtx);
+
 				return true;
 			}
 			else
@@ -74,9 +75,15 @@ bool Initialize()
 void Run()
 {
 	SDL_Event e;
+	Uint64 ts_current = SDL_GetPerformanceCounter();
+	Uint64 ts_last = 0;
+	float deltaTime = 0.f;
 
-	while (run)
+	while (gAppCtx.running)
 	{
+		ts_last = ts_current;
+		ts_current = SDL_GetPerformanceCounter();
+		deltaTime = (float)( (ts_current - ts_last) * 1000 / (float)SDL_GetPerformanceFrequency() );
 		//Peek for messages and pass them to ImGui, don't remove them, SDL does that internally
 		MSG msg;
 		if (PeekMessage(&msg, NULL, 0U, 0U, PM_NOREMOVE) != 0)
@@ -88,14 +95,18 @@ void Run()
 		}
 		//New frame
 		gImGuiWrap.Frame_IMGUI();
-
+		
 		//Do work on the CPU -> Update()...
+		gScene.Update(deltaTime);
+
 		ImGui::Begin("Test");
 		ImGui::End();
 
 		//Prepares the backbuffer surface
 		gRenderer->StartFrame();
+
 		//Populate command list
+		gScene.Draw(gRenderer->GetCommandList());
 		gImGuiWrap.Render_IMGUI(gRenderer->GetCommandList());
 
 		//End recording, execute lists and present the final frame
@@ -111,11 +122,11 @@ void HandleEvent(SDL_Event & e)
 	switch (e.type)
 	{
 	case SDL_QUIT:
-		run = false;
+		gAppCtx.running = false;
 		break;
 	case SDL_KEYUP:
 		if (e.key.keysym.sym == SDLK_ESCAPE)
-			run = false;
+			gAppCtx.running = false;
 		break;
 	default:
 		break;

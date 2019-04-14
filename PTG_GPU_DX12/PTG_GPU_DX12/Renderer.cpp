@@ -12,7 +12,7 @@ namespace D3D12
 	{
 	}
 
-	bool Renderer::Init(HWND hwnd, UINT width, UINT height)
+	bool Renderer::Init(AppCtx appCtx)
 	{
 		HRESULT hr = E_FAIL;
 		//Debug layer
@@ -48,7 +48,7 @@ namespace D3D12
 			return hr;
 		}
 		//create the swapchain
-		hr = _createSwapChain(hwnd, width, height, &factory);
+		hr = _createSwapChain(appCtx.hwnd, appCtx.width, appCtx.height, &factory);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -331,7 +331,7 @@ namespace D3D12
 
 		//This is the constant buffer
 		D3D12_ROOT_CONSTANTS rootConstants[1];
-		rootConstants[0].Num32BitValues = 1;
+		rootConstants[0].Num32BitValues = 32; //We have two 4x4 Matrices, View and Proj
 		rootConstants[0].RegisterSpace = 0;
 		rootConstants[0].ShaderRegister = 0;
 

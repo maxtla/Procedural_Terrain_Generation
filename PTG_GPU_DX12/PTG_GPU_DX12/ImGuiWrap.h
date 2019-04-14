@@ -27,7 +27,7 @@ struct ImGuiWrap
 			unsigned char* tex_pixels = NULL;
 			int tex_w, tex_h;
 			imgui_io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
-			imgui_io.DisplaySize = ImVec2(width, height);
+			imgui_io.DisplaySize = ImVec2((float)width, (float)height);
 			imgui_io.DeltaTime = 1.0f / 60.0f;
 
 			ImGui_ImplWin32_Init(hwnd);
