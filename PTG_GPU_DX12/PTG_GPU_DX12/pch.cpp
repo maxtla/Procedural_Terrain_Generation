@@ -5,5 +5,5 @@
 #include "pch.h"
 
 AppCtx gAppCtx;
-
+ShaderReader gShaderReader;
 // In general, ignore this file, but keep it around if you are using pre-compiled headers.

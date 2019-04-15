@@ -10,6 +10,12 @@
 #include <memory>
 #include <tchar.h>
 #include <string>
+#include <fstream>
+
+//Memory leak detection
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 //DirectX 12 Toolkit
 #include "DirectXHelpers.h"
@@ -17,6 +23,9 @@
 
 //ImGui
 #include "ImGuiWrap.h"
+
+//Own classes that rarely change
+#include "ShaderReader.h"
 
 //Application
 struct CameraSettings
@@ -43,6 +52,7 @@ struct AppCtx
 
 	bool vsync		= false;
 	bool running	= true;
+	UINT backbufferCount = 2;
 
 	CameraSettings camSettings;
 };

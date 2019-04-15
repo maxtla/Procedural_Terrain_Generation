@@ -330,17 +330,24 @@ namespace D3D12
 	// 4. How many DWORDs did we use (Max size of 64, or 63 with enabled IA)
 
 		//This is the constant buffer
-		D3D12_ROOT_CONSTANTS rootConstants[1];
+		D3D12_ROOT_CONSTANTS rootConstants[2];
 		rootConstants[0].Num32BitValues = 32; //We have two 4x4 Matrices, View and Proj
 		rootConstants[0].RegisterSpace = 0;
-		rootConstants[0].ShaderRegister = 0;
+		rootConstants[0].ShaderRegister = 0; //b0
 
-		D3D12_ROOT_PARAMETER rootParams[1];
+		rootConstants[1].Num32BitValues = 16; //We have one 4x4 Matrices, World
+		rootConstants[1].RegisterSpace = 0;
+		rootConstants[1].ShaderRegister = 1; //b1
+
+		D3D12_ROOT_PARAMETER rootParams[2];
 		{
 			rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			rootParams[0].Constants = rootConstants[0];
-			rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-			//Total of 3 DWORD
+			rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+			rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+			rootParams[1].Constants = rootConstants[1];
+			rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 		}
 
 		// Create descriptor of static sampler
@@ -364,7 +371,7 @@ namespace D3D12
 		rsDesc.pParameters = rootParams; //Pointer to array of table entries
 		rsDesc.NumStaticSamplers = 1;  //One static samplers were defined
 		rsDesc.pStaticSamplers = &sampler; // The static sampler
-		rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		//Serialize the root signature (no error blob)
 		ID3DBlob * pSerBlob = NULL;

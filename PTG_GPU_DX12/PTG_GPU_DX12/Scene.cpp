@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Scene.h"
 
-
 Scene::Scene()
 {
 }
@@ -17,6 +16,7 @@ void Scene::Initialize(AppCtx appCtx)
 	m_camera.SetMoveSpeed(appCtx.camSettings.moveSpeed);
 	m_camera.SetRotationalSpeed(appCtx.camSettings.rotSpeed);
 	m_camera.SetProjectionMatrix(appCtx.camSettings.fov, appCtx.camSettings.aspectRatio, appCtx.camSettings.nearZ, appCtx.camSettings.farZ);
+
 }
 
 void Scene::Update(float& dt)

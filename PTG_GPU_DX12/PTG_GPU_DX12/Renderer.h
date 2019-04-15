@@ -39,6 +39,7 @@ namespace D3D12
 		ID3D12Device * GetDevice() { return m_device; }
 		ID3D12GraphicsCommandList * GetCommandList() { return m_gCmdList; }
 		ID3D12CommandQueue * GetCommandQueue() { return m_directQ; }
+		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
 
 	private:
 		IDXGIAdapter1 * _findDX12Adapter(IDXGIFactory5 ** ppFactory);

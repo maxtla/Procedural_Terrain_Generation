@@ -3,8 +3,10 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include "RenderState.h"
 
 extern AppCtx gAppCtx;
+extern ShaderReader gShaderReader;
 //SDL
 SDL_Window * window = NULL;
 
@@ -15,9 +17,12 @@ ImGuiWrap gImGuiWrap;
 //Renderer
 D3D12::Renderer * gRenderer = nullptr;
 D3D12::Fence * gFence = nullptr;
+std::vector<Shader> gShaderCollection;
+RenderState gRenderState;
 
 //Application
 bool Initialize();
+void LoadShaders();
 void Run();
 void HandleEvent(SDL_Event &e);
 void Shutdown();
@@ -27,6 +32,7 @@ Scene gScene;
 
 int main()
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	if (Initialize())
 	{
 		Run();
@@ -50,6 +56,8 @@ bool Initialize()
 				gFence = gRenderer->MakeFence(0, 1, D3D12_FENCE_FLAG_NONE);
 				gImGuiWrap.Initialize_IMGUI(gAppCtx.width, gAppCtx.height, gAppCtx.hwnd, gRenderer->GetDevice());
 
+				LoadShaders();
+
 				gScene.Initialize(gAppCtx);
 
 				return true;
@@ -70,6 +78,17 @@ bool Initialize()
 		SDL_Log("Unable to intialize SDL: %s", SDL_GetError());
 		return false;
 	}
+}
+
+void LoadShaders()
+{
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicVS.cso"));
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicPS.cso"));
+
+	gRenderState.AddShader(VS, gShaderCollection[0]);
+	gRenderState.AddShader(PS, gShaderCollection[1]);
+
+	gRenderState.CreatePipelineState(gRenderer->GetRootSignature(), gRenderState.GetDefaultStateDescription());
 }
 
 void Run()
@@ -143,6 +162,9 @@ void Shutdown()
 
 	gRenderer->CleanUp();
 	delete gRenderer;
+
+	for (auto & s : gShaderCollection)
+		free(s.compiledShaderCode);
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
