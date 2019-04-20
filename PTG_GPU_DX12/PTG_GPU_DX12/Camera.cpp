@@ -4,6 +4,7 @@
 
 Camera::Camera()
 {
+	m_viewProj.m_view =  DirectX::XMMatrixLookAtLH(m_pos, m_dir, DefaultUp);
 }
 
 
@@ -13,6 +14,8 @@ Camera::~Camera()
 
 void Camera::Update(float& dt)
 {
+	ImGuiUpdate();
+
 	if (!SDL_GetRelativeMouseMode())
 		return;
 
@@ -32,6 +35,10 @@ void Camera::Update(float& dt)
 		m_moveBackForward += speed;
 	if (keyStates[SDL_SCANCODE_S])
 		m_moveBackForward -= speed;
+	if (keyStates[SDL_SCANCODE_UP])
+		m_moveUpDown += speed;
+	if (keyStates[SDL_SCANCODE_DOWN])
+		m_moveUpDown -= speed;
 
 	m_yaw += (dx * m_rs);
 	m_pitch += (dy * m_rs);
@@ -39,27 +46,39 @@ void Camera::Update(float& dt)
 	//Update the camera
 	{
 		using namespace DirectX;
-		m_camRotMatrix = XMMatrixRotationRollPitchYaw(m_pitch, m_yaw, 0);
-		m_target = XMVector3TransformCoord(DefaultForward, m_camRotMatrix);
-		m_target = XMVector3Normalize(m_target);
 
-		XMMATRIX tempRotY;
-		tempRotY = XMMatrixRotationY(m_yaw);
+		m_dir += XMVectorSet(m_moveLeftRight, m_moveUpDown, m_moveBackForward, 1.f);
+		m_pos += XMVectorSet(m_moveLeftRight, m_moveUpDown, m_moveBackForward, 1.f);
 
-		m_right = XMVector3TransformCoord(DefaultRight, tempRotY);
-		m_up = XMVector3TransformCoord(m_up, tempRotY); //might need to swap this with DefaultUp
-		m_forward = XMVector3TransformCoord(DefaultForward, tempRotY);
+		m_viewProj.m_view = XMMatrixLookAtLH(m_pos, m_dir, DefaultUp);
 
-		m_pos += (m_moveLeftRight * m_right);
-		m_pos += (m_moveBackForward * m_forward);
-
-		m_target = m_pos + m_target;
-
-		m_viewProj.m_view = XMMatrixLookAtLH(m_pos, m_target, m_up);
+		m_yaw = m_pitch = 0.f;
+		m_moveUpDown = m_moveLeftRight = m_moveBackForward = 0.f;
 	}
 }
 
 void Camera::Draw(ID3D12GraphicsCommandList * pCommandList)
 {
+	m_viewProj.m_view = DirectX::XMMatrixTranspose(m_viewProj.m_view);
+	m_viewProj.m_projection = DirectX::XMMatrixTranspose(m_viewProj.m_projection);
+
 	pCommandList->SetGraphicsRoot32BitConstants(0, 32, (void*)&m_viewProj, 0);
+}
+
+void Camera::ImGuiUpdate()
+{
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMStoreFloat3(&pos, m_pos);
+
+	DirectX::XMFLOAT3 target;
+	DirectX::XMStoreFloat3(&target, m_dir);
+
+	std::stringstream ss;
+
+	ss << "Position:\n X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z;
+	ss << "\n\nDirection:\n X: " << target.x << " Y: " << target.y << " Z: " << target.z;
+
+	ImGui::Begin("Camera");
+	ImGui::Text(ss.str().c_str());
+	ImGui::End();
 }

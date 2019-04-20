@@ -1,7 +1,9 @@
 #pragma once
 #include <d3d12.h>
 #include <dxgi1_5.h>
+#include "GraphicsMemory.h"
 
+struct AppCtx;
 
 namespace D3D12
 {
@@ -14,6 +16,9 @@ namespace D3D12
 		UINT64 m_fenceValue = 0;
 	};
 
+	const int MAX_CONSTANT_BUFFERS = 16;
+	const UINT SO_BUFFER_SIZE = 3072; //idk how much I'm even gonna need
+
 	class Renderer
 	{
 	public:
@@ -24,6 +29,7 @@ namespace D3D12
 		void StartFrame();
 		void EndFrame();
 		void Present(Fence * fence);
+		void Reset();
 
 		Fence * MakeFence(UINT64 initialValue, UINT64 completionValue, D3D12_FENCE_FLAGS flag, const wchar_t * debugName = L"FenceObject");
 		bool DestroyFence(Fence * fence);
@@ -40,6 +46,7 @@ namespace D3D12
 		ID3D12GraphicsCommandList * GetCommandList() { return m_gCmdList; }
 		ID3D12CommandQueue * GetCommandQueue() { return m_directQ; }
 		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
+		ID3D12DescriptorHeap * GetCBVHeap() { return m_CBVHeap; }
 
 	private:
 		IDXGIAdapter1 * _findDX12Adapter(IDXGIFactory5 ** ppFactory);
@@ -49,6 +56,7 @@ namespace D3D12
 		HRESULT _createSwapChain(HWND hwnd, UINT width, UINT height, IDXGIFactory5 ** ppFactory);
 		HRESULT _createHeapsAndResources();
 		HRESULT _createRootSignature();
+		HRESULT _createDepthBuffer(float width, float height);
 
 
 	private:
@@ -66,9 +74,19 @@ namespace D3D12
 		ID3D12Resource* m_renderTargets[BUFFER_COUNT] = { NULL, NULL };
 		ID3D12DescriptorHeap* m_rtvHeap = NULL;
 
+		ID3D12Resource * m_depthBuffer = NULL;
+		ID3D12DescriptorHeap * m_depthHeap = NULL;
+
+		ID3D12DescriptorHeap * m_CBVHeap = NULL;
+
 		ID3D12RootSignature* m_rootSignature = NULL;
 
 		float m_clearColor[4] = { 0.f, 0.4f, 0.2f, 1.f };
+
+		D3D12_VIEWPORT m_viewPort = {};
+		D3D12_RECT m_scissorRect = {};
+
+		UINT m_frameIndex = 0;
 	};
 }
 

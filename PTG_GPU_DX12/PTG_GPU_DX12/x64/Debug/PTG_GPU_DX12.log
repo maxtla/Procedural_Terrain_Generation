@@ -1,3 +1,5 @@
-﻿  RenderState.cpp
+﻿  Renderer.cpp
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\renderer.cpp(486): warning C4244: '=': conversion from 'float' to 'UINT64', possible loss of data
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\renderer.cpp(487): warning C4244: '=': conversion from 'float' to 'UINT', possible loss of data
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Debug\PTG_GPU_DX12.exe
           1 file(s) copied.

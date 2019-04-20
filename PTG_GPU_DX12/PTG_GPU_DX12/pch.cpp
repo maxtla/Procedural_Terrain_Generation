@@ -6,4 +6,5 @@
 
 AppCtx gAppCtx;
 ShaderReader gShaderReader;
+D3D12::Renderer gRenderer;
 // In general, ignore this file, but keep it around if you are using pre-compiled headers.

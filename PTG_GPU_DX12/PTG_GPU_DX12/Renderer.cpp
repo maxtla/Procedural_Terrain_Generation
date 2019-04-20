@@ -65,11 +65,32 @@ namespace D3D12
 		{
 			return hr;
 		}
+		//create the Depthbuffer and DSV
+		hr = _createDepthBuffer((float)appCtx.width, (float)appCtx.height);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 
 		initialized = true;
 
 		SafeRelease(&factory);
 		SafeRelease(&adapter);
+
+		//Define the viewport and scissor rect
+		{
+			this->m_viewPort.TopLeftX = 0.f;
+			this->m_viewPort.TopLeftY = 0.f;
+			this->m_viewPort.MinDepth = 0.f;
+			this->m_viewPort.MaxDepth = 1.f;
+			this->m_viewPort.Width = (float)appCtx.width;
+			this->m_viewPort.Height = (float)appCtx.height;
+
+			this->m_scissorRect.left = (long)this->m_viewPort.TopLeftX;
+			this->m_scissorRect.top = (long)this->m_viewPort.TopLeftY;
+			this->m_scissorRect.right = (long)this->m_viewPort.Width;
+			this->m_scissorRect.bottom = (long)this->m_viewPort.Height;
+		}
 
 		return hr;
 	}
@@ -78,28 +99,34 @@ namespace D3D12
 	{
 		using namespace DirectX;
 
-		UINT frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+		m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+		D3D12_CPU_DESCRIPTOR_HANDLE cdh_DSV = m_depthHeap->GetCPUDescriptorHandleForHeapStart();
 
 		m_directAllocator->Reset();
 		m_gCmdList->Reset(m_directAllocator, nullptr);
 
 		m_gCmdList->SetGraphicsRootSignature(m_rootSignature);
+		m_gCmdList->RSSetViewports(1, &m_viewPort);
+		m_gCmdList->RSSetScissorRects(1, &m_scissorRect);
 		
 		// Indicate that the back buffer will be used as a render target.
-		m_gCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		m_gCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-		m_gCmdList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+		m_gCmdList->OMSetRenderTargets(1, &rtvHandle, TRUE, &cdh_DSV);
 
 		// Record commands.
 		m_gCmdList->ClearRenderTargetView(rtvHandle, m_clearColor, 0, nullptr);
+		m_gCmdList->ClearDepthStencilView(cdh_DSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		m_gCmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		
 	}
 
 	void Renderer::EndFrame()
 	{
-		UINT frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 		// Indicate that the back buffer will now be used to present.
-		m_gCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		m_gCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 		m_gCmdList->Close();
 
 		m_directQ->ExecuteCommandLists(1, (ID3D12CommandList * const*)&m_gCmdList);
@@ -111,6 +138,12 @@ namespace D3D12
 
 		DXGI_PRESENT_PARAMETERS pp = {};
 		m_swapChain->Present1(0, 0, &pp);
+	}
+
+	void Renderer::Reset()
+	{
+		m_directAllocator->Reset();
+		m_gCmdList->Reset(m_directAllocator, nullptr);
 	}
 
 	Fence * Renderer::MakeFence(UINT64 initialValue, UINT64 completionValue, D3D12_FENCE_FLAGS flag, const wchar_t * debugName)
@@ -162,6 +195,7 @@ namespace D3D12
 		SafeRelease(&m_gCmdList);
 		SafeRelease(&m_rtvHeap);
 		SafeRelease(&m_rootSignature);
+		SafeRelease(&m_CBVHeap);
 
 		for (int i = 0; i < BUFFER_COUNT; i++)
 			SafeRelease(&m_renderTargets[i]);
@@ -318,6 +352,15 @@ namespace D3D12
 				cdh.ptr += m_rtvDescSize;
 			}
 		}
+
+		dhd.NumDescriptors = MAX_CONSTANT_BUFFERS;
+		dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_CBVHeap));
+		if (FAILED(hr))
+			return hr;
+		m_rtvHeap->SetName(L"CBV HEAP");
+
 		return hr;
 	}
 
@@ -329,15 +372,25 @@ namespace D3D12
 	// 3. How many Descriptor Tables do we need/want? (1 DWORD, 2 indirections)
 	// 4. How many DWORDs did we use (Max size of 64, or 63 with enabled IA)
 
-		//This is the constant buffer
-		D3D12_ROOT_CONSTANTS rootConstants[2];
+		//Dynamic constant buffers
+		D3D12_ROOT_CONSTANTS rootConstants[1];
 		rootConstants[0].Num32BitValues = 32; //We have two 4x4 Matrices, View and Proj
 		rootConstants[0].RegisterSpace = 0;
 		rootConstants[0].ShaderRegister = 0; //b0
 
-		rootConstants[1].Num32BitValues = 16; //We have one 4x4 Matrices, World
-		rootConstants[1].RegisterSpace = 0;
-		rootConstants[1].ShaderRegister = 1; //b1
+		D3D12_ROOT_DESCRIPTOR_TABLE cbvDescTable;
+		D3D12_DESCRIPTOR_RANGE cbvRange;
+		//Less Dynamic constant buffers
+		{
+			cbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			cbvRange.NumDescriptors = MAX_CONSTANT_BUFFERS;
+			cbvRange.BaseShaderRegister = 1; //b0 is reserved for ViewProj matrices, start from b1
+			cbvRange.RegisterSpace = 0;
+			cbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			cbvDescTable.pDescriptorRanges = &cbvRange;
+			cbvDescTable.NumDescriptorRanges = 1;
+		}
 
 		D3D12_ROOT_PARAMETER rootParams[2];
 		{
@@ -345,9 +398,9 @@ namespace D3D12
 			rootParams[0].Constants = rootConstants[0];
 			rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
-			rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-			rootParams[1].Constants = rootConstants[1];
-			rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParams[1].DescriptorTable = cbvDescTable;
+			rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		}
 
 		// Create descriptor of static sampler
@@ -371,7 +424,7 @@ namespace D3D12
 		rsDesc.pParameters = rootParams; //Pointer to array of table entries
 		rsDesc.NumStaticSamplers = 1;  //One static samplers were defined
 		rsDesc.pStaticSamplers = &sampler; // The static sampler
-		rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
 
 		//Serialize the root signature (no error blob)
 		ID3DBlob * pSerBlob = NULL;
@@ -392,6 +445,71 @@ namespace D3D12
 		UINT nodeMask = 0;
 
 		return this->m_device->CreateRootSignature(nodeMask, pSerBlob->GetBufferPointer(), pSerBlob->GetBufferSize(), IID_PPV_ARGS(&this->m_rootSignature));
+	}
+
+	HRESULT Renderer::_createDepthBuffer(float width, float height)
+	{
+		HRESULT hr = E_FAIL;
+
+		// create a depth stencil descriptor heap so we can get a pointer to the depth stencil buffer
+		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+		dsvHeapDesc.NumDescriptors = 1;
+		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+		hr = m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_depthHeap));
+		if (FAILED(hr))
+			return hr;
+
+		m_depthHeap->SetName(L"Depth Resource Heap");
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+		depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+		D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+		depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+		depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+		depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+		D3D12_HEAP_PROPERTIES heapProperties = {};
+		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		heapProperties.CreationNodeMask = 1;
+		heapProperties.VisibleNodeMask = 1;
+
+		D3D12_RESOURCE_DESC textureDesc = {};
+		textureDesc.MipLevels = 1;
+		textureDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		textureDesc.DepthOrArraySize = 1;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		textureDesc.Alignment = 0;
+		textureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+		hr = m_device->CreateCommittedResource(
+			&heapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&textureDesc,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			&depthOptimizedClearValue,
+			IID_PPV_ARGS(&m_depthBuffer)
+		);
+
+		if (FAILED(hr))
+			return hr;
+
+		m_depthBuffer->SetName(L"DepthBufferResource");
+
+		m_device->CreateDepthStencilView(m_depthBuffer, &depthStencilDesc, m_depthHeap->GetCPUDescriptorHandleForHeapStart());
+
+		return hr;
 	}
 
 	void Renderer::WaitForGPUCompletion(ID3D12CommandQueue * pCmdQ, Fence * fence)

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Scene.h"
 
+extern D3D12::Renderer gRenderer;
+extern std::vector<Shader> gShaderCollection;
+
 Scene::Scene()
 {
 }
@@ -8,6 +11,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+	m_gs.Release();
 }
 
 void Scene::Initialize(AppCtx appCtx)
@@ -17,6 +21,12 @@ void Scene::Initialize(AppCtx appCtx)
 	m_camera.SetRotationalSpeed(appCtx.camSettings.rotSpeed);
 	m_camera.SetProjectionMatrix(appCtx.camSettings.fov, appCtx.camSettings.aspectRatio, appCtx.camSettings.nearZ, appCtx.camSettings.farZ);
 
+	m_rs.AddShader(VS, gShaderCollection[0]);
+	m_rs.AddShader(PS, gShaderCollection[1]);
+
+	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription());
+
+	m_gs.Init();
 }
 
 void Scene::Update(float& dt)
@@ -24,8 +34,21 @@ void Scene::Update(float& dt)
 	int numKeys;
 	const Uint8 * keyStates = SDL_GetKeyboardState(&numKeys);
 
-	if (keyStates[SDL_SCANCODE_TAB])
+	static bool keyReleased = false;
+	static bool keyPressed = false;
+	if (!keyReleased && keyStates[SDL_SCANCODE_TAB])
 	{
+		keyPressed = true;
+	}
+	else if (keyPressed && !keyStates[SDL_SCANCODE_TAB])
+	{
+		keyPressed = false;
+		keyReleased = true;
+	}
+
+	if (keyReleased)
+	{
+		keyReleased = false;
 		if (SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode((SDL_bool)false);
 		else
@@ -37,5 +60,11 @@ void Scene::Update(float& dt)
 
 void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 {
+	m_gs.DrawAndExecute();
+
+	gRenderer.StartFrame();
+
 	m_camera.Draw(pCommandList);
+	m_rs.Apply(pCommandList);
+	m_gs.PrepareForRendering(pCommandList);
 }

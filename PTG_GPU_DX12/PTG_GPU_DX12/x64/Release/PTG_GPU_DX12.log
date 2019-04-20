@@ -1,10 +1,20 @@
 ﻿  pch.cpp
+  Camera.cpp
+  ConstantBuffer.cpp
+  GeometryStage.cpp
   PTG_GPU_DX12.cpp
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\ptg_gpu_dx12.cpp(127): warning C4244: 'argument': conversion from 'float' to 'DWORD', possible loss of data
+  RenderState.cpp
   Renderer.cpp
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\renderer.cpp(485): warning C4244: '=': conversion from 'float' to 'UINT64', possible loss of data
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\ptg_gpu_dx12\renderer.cpp(486): warning C4244: '=': conversion from 'float' to 'UINT', possible loss of data
+  SOBuffer.cpp
+  Scene.cpp
+  ShaderReader.cpp
   Generating code
-  378 of 1014 functions (37.3%) were compiled, the rest were copied from previous compilation.
-    15 functions were new in current compilation
-    29 functions had inline decision re-evaluated but remain unchanged
+  52 of 1365 functions ( 3.8%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Release\PTG_GPU_DX12.exe
           1 file(s) copied.

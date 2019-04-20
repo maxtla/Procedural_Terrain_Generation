@@ -1,7 +1,7 @@
 // PTG_GPU_DX12.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "pch.h"
-#include "Renderer.h"
+
 #include "Scene.h"
 #include "RenderState.h"
 
@@ -15,10 +15,9 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 ImGuiWrap gImGuiWrap;
 
 //Renderer
-D3D12::Renderer * gRenderer = nullptr;
+extern D3D12::Renderer gRenderer;
 D3D12::Fence * gFence = nullptr;
 std::vector<Shader> gShaderCollection;
-RenderState gRenderState;
 
 //Application
 bool Initialize();
@@ -28,7 +27,7 @@ void HandleEvent(SDL_Event &e);
 void Shutdown();
 
 //Scene
-Scene gScene;
+Scene * gScene = nullptr;
 
 int main()
 {
@@ -43,7 +42,6 @@ int main()
 
 bool Initialize()
 {
-	gRenderer = new D3D12::Renderer();
 
 	if (SDL_Init(SDL_INIT_VIDEO) == 0)
 	{
@@ -51,20 +49,21 @@ bool Initialize()
 		if (window)
 		{
 			gAppCtx.hwnd = GetActiveWindow();
-			if (SUCCEEDED(gRenderer->Init(gAppCtx)))
+			if (SUCCEEDED(gRenderer.Init(gAppCtx)))
 			{
-				gFence = gRenderer->MakeFence(0, 1, D3D12_FENCE_FLAG_NONE);
-				gImGuiWrap.Initialize_IMGUI(gAppCtx.width, gAppCtx.height, gAppCtx.hwnd, gRenderer->GetDevice());
+				gFence = gRenderer.MakeFence(0, 1, D3D12_FENCE_FLAG_NONE);
+				gImGuiWrap.Initialize_IMGUI(gAppCtx.width, gAppCtx.height, gAppCtx.hwnd, gRenderer.GetDevice());
 
 				LoadShaders();
 
-				gScene.Initialize(gAppCtx);
+				gScene = new Scene();
+
+				gScene->Initialize(gAppCtx);
 
 				return true;
 			}
 			else
 			{
-				delete gRenderer;
 				SDL_DestroyWindow(window);
 				window = nullptr;
 				return false;
@@ -82,13 +81,11 @@ bool Initialize()
 
 void LoadShaders()
 {
-	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicVS.cso"));
-	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicPS.cso"));
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicVS.cso")); //0
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("BasicPS.cso")); //1
 
-	gRenderState.AddShader(VS, gShaderCollection[0]);
-	gRenderState.AddShader(PS, gShaderCollection[1]);
-
-	gRenderState.CreatePipelineState(gRenderer->GetRootSignature(), gRenderState.GetDefaultStateDescription());
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("CubesVS.cso")); //2
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("CubesGS.cso")); //3
 }
 
 void Run()
@@ -116,21 +113,18 @@ void Run()
 		gImGuiWrap.Frame_IMGUI();
 		
 		//Do work on the CPU -> Update()...
-		gScene.Update(deltaTime);
-
-		ImGui::Begin("Test");
-		ImGui::End();
-
-		//Prepares the backbuffer surface
-		gRenderer->StartFrame();
+		gScene->Update(deltaTime);
 
 		//Populate command list
-		gScene.Draw(gRenderer->GetCommandList());
-		gImGuiWrap.Render_IMGUI(gRenderer->GetCommandList());
+		gScene->Draw(gRenderer.GetCommandList());
+		gImGuiWrap.Render_IMGUI(gRenderer.GetCommandList());
 
-		//End recording, execute lists and present the final frame
-		gRenderer->EndFrame();
-		gRenderer->Present(gFence);
+		gRenderer.EndFrame();
+		gRenderer.Present(gFence);
+
+		float sleep = (1000.f / 60.f) - deltaTime;
+		if (sleep > 0)
+			Sleep(sleep);
 	}
 
 }
@@ -154,14 +148,15 @@ void HandleEvent(SDL_Event & e)
 
 void Shutdown()
 {
-	gRenderer->WaitForGPUCompletion(gRenderer->GetCommandQueue(), gFence);
+	gRenderer.WaitForGPUCompletion(gRenderer.GetCommandQueue(), gFence);
+
+	delete gScene;
 
 	gImGuiWrap.Destroy_IMGUI();
 
-	gRenderer->DestroyFence(gFence);
+	gRenderer.DestroyFence(gFence);
 
-	gRenderer->CleanUp();
-	delete gRenderer;
+	gRenderer.CleanUp();
 
 	for (auto & s : gShaderCollection)
 		free(s.compiledShaderCode);

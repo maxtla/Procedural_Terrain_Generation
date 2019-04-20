@@ -1,5 +1,6 @@
 #pragma once
 #include "Camera.h"
+#include "GeometryStage.h"
 //A scene contains the world, configurations for rendering, 
 // and manages the Camera, other input and per frame updates
 
@@ -15,5 +16,7 @@ public:
 	void Draw(ID3D12GraphicsCommandList * pCommandList);
 private:
 	Camera m_camera;
+	GeometryStage m_gs;
+	RenderState m_rs;
 };
 

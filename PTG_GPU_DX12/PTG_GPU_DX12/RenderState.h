@@ -37,6 +37,8 @@ public:
 
 	bool IsCompute() { return m_isCompute; }
 	StateDescription GetDefaultStateDescription();
+
+	void Apply(ID3D12GraphicsCommandList * pCommandList);
 private:
 	Shader m_shaders[MAX_SHADERS];
 	ID3D12PipelineState * m_pso = nullptr;

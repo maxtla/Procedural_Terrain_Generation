@@ -72,6 +72,15 @@
     <ClInclude Include="RenderState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SOBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryStage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PTG_GPU_DX12.cpp">
@@ -110,6 +119,15 @@
     <ClCompile Include="RenderState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SOBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryStage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -119,6 +137,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\BasicVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CubesGS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CubesVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

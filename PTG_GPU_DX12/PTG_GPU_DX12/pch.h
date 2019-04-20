@@ -11,6 +11,7 @@
 #include <tchar.h>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 //Memory leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -20,26 +21,29 @@
 //DirectX 12 Toolkit
 #include "DirectXHelpers.h"
 #include "d3dx12.h"
+#include "GeometricPrimitive.h"
+#include "GraphicsMemory.h"
 
 //ImGui
 #include "ImGuiWrap.h"
 
 //Own classes that rarely change
 #include "ShaderReader.h"
+#include "Renderer.h"
 
 //Application
 struct CameraSettings
 {
 	float x = 0.f;
-	float y = 1.f;
-	float z = -1.f;
+	float y = 0.f;
+	float z = -2.f;
 
 	float fov = DirectX::XM_PIDIV4; //standard fov
 	float aspectRatio = 1.0f; // W / H = 800U / 800U = 1U 
-	float nearZ = 1.0f;
+	float nearZ = 0.01f;
 	float farZ = 100.f;
 
-	float moveSpeed = 15.f;
+	float moveSpeed = 0.001f;
 	float rotSpeed = 0.001f;
 };
 
