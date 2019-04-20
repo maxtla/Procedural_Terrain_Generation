@@ -15,7 +15,7 @@ public:
 	void SetRotationalSpeed(float rs) { m_rs = rs; }
 	void SetMoveSpeed(float ms) { m_ms = ms; }
 	void SetProjectionMatrix(float fov, float aspect, float nearZ, float farZ) { m_viewProj.m_projection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ); }
-
+	void TransposeProjectioneMatrix() { m_viewProj.m_projection = DirectX::XMMatrixTranspose(m_viewProj.m_projection); }
 private:
 	const DirectX::XMVECTOR DefaultForward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	const DirectX::XMVECTOR DefaultRight		= DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
@@ -27,11 +27,12 @@ private:
 
 	DirectX::XMMATRIX m_camRotMatrix			= DirectX::XMMatrixIdentity();
 	DirectX::XMVECTOR m_pos							= DirectX::XMVectorSet(0.0f, 0.0f, -2.0f, 0.0f);
-	DirectX::XMVECTOR m_dir							= DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
+	DirectX::XMVECTOR m_target						= DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
 
 	float m_moveLeftRight			= 0.f;
 	float m_moveBackForward		= 0.f;
 	float m_moveUpDown				= 0.f;
+	float m_rotLeftRight				= 0.f;
 
 	float m_yaw		= 0.f;
 	float m_pitch	= 0.f;

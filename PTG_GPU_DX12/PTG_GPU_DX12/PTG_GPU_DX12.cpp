@@ -48,6 +48,7 @@ bool Initialize()
 		window = SDL_CreateWindow(gAppCtx.wnd_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gAppCtx.width, gAppCtx.height, SDL_WINDOW_SHOWN);
 		if (window)
 		{
+			gAppCtx.pSDLWindow = window;
 			gAppCtx.hwnd = GetActiveWindow();
 			if (SUCCEEDED(gRenderer.Init(gAppCtx)))
 			{
@@ -114,7 +115,6 @@ void Run()
 		
 		//Do work on the CPU -> Update()...
 		gScene->Update(deltaTime);
-
 		//Populate command list
 		gScene->Draw(gRenderer.GetCommandList());
 		gImGuiWrap.Render_IMGUI(gRenderer.GetCommandList());
@@ -122,9 +122,9 @@ void Run()
 		gRenderer.EndFrame();
 		gRenderer.Present(gFence);
 
-		float sleep = (1000.f / 60.f) - deltaTime;
-		if (sleep > 0)
-			Sleep(sleep);
+		//float sleep = (1000.f / 60.f) - deltaTime;
+		//if (sleep > 0)
+		//	Sleep((DWORD)sleep);
 	}
 
 }
@@ -140,6 +140,18 @@ void HandleEvent(SDL_Event & e)
 	case SDL_KEYUP:
 		if (e.key.keysym.sym == SDLK_ESCAPE)
 			gAppCtx.running = false;
+		break;
+	case SDL_MOUSEMOTION:
+		if (SDL_GetRelativeMouseMode())
+		{
+			gAppCtx.mx = e.motion.xrel;
+			gAppCtx.my = e.motion.yrel;
+		}
+		else
+		{
+			gAppCtx.mx = e.motion.x;
+			gAppCtx.my = e.motion.y;
+		}
 		break;
 	default:
 		break;

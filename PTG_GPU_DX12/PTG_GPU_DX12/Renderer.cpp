@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Renderer.h"
 
+
 namespace D3D12
 {
 	Renderer::Renderer()
@@ -47,6 +48,7 @@ namespace D3D12
 		{
 			return hr;
 		}
+		BUFFER_COUNT = appCtx.backbufferCount;
 		//create the swapchain
 		hr = _createSwapChain(appCtx.hwnd, appCtx.width, appCtx.height, &factory);
 		if (FAILED(hr))
@@ -196,10 +198,13 @@ namespace D3D12
 		SafeRelease(&m_rtvHeap);
 		SafeRelease(&m_rootSignature);
 		SafeRelease(&m_CBVHeap);
+		SafeRelease(&m_depthHeap);
+		SafeRelease(&m_depthBuffer);
 
 		for (int i = 0; i < BUFFER_COUNT; i++)
 			SafeRelease(&m_renderTargets[i]);
-		
+		delete[] m_renderTargets;
+
 		SafeRelease(&m_device);
 		initialized = false;
 	}
@@ -341,6 +346,7 @@ namespace D3D12
 		heapProp.CreationNodeMask = 0;
 		heapProp.VisibleNodeMask = 0;
 
+		m_renderTargets = new ID3D12Resource*[BUFFER_COUNT];
 		//one RTV for each swapchain buffer
 		for (UINT i = 0; i < BUFFER_COUNT; i++)
 		{

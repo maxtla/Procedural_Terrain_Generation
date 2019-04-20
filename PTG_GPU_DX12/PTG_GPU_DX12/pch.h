@@ -50,15 +50,19 @@ struct CameraSettings
 struct AppCtx
 {
 	std::string wnd_title = "Procedural Terrain Generation with DirectX 12";
-	UINT width		= 800U;
-	UINT height		= 800U;
+	UINT width		= 1920U;
+	UINT height		= 1080U;
 	HWND hwnd;
 
 	bool vsync		= false;
 	bool running	= true;
-	UINT backbufferCount = 2;
+	UINT backbufferCount = 3;
 
 	CameraSettings camSettings;
+	SDL_Window * pSDLWindow;
+
+	int mx = 0;
+	int my = 0;
 };
 
 //Some commonly used functions

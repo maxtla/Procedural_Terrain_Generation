@@ -1,8 +1,8 @@
 
 cbuffer ViewProj : register(b0)
 {
-    float4x4 viewM;
-    float4x4 projM;
+    matrix viewM;
+    matrix projM;
 };
 
 struct VtxInput

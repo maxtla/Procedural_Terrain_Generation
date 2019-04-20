@@ -53,7 +53,7 @@ void GeometryStage::PrepareForRendering(ID3D12GraphicsCommandList * pCommandList
 	vtv.StrideInBytes = sizeof(float) * 8;
 
 	pCommandList->IASetVertexBuffers(0, 1, &vtv);
-	pCommandList->DrawInstanced(24*4, 1, 0, 0);
+	pCommandList->DrawInstanced(36*4, 1, 0, 0);
 
 	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_SOBuffer.GetSOBuffer(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,D3D12_RESOURCE_STATE_STREAM_OUT));
 }

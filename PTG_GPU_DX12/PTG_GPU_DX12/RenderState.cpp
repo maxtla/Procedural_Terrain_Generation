@@ -79,8 +79,8 @@ RenderState::StateDescription RenderState::GetDefaultStateDescription()
 	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	desc.SampleMask = 0xffffffff;
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-	desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	//desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	//desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

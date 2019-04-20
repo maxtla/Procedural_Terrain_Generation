@@ -1,0 +1,11 @@
+﻿  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\Win32Release\Shaders\BasicPS.cso
+  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\Win32Release\Shaders\BasicVS.cso
+  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\Win32Release\Shaders\CubesGS.cso
+  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\Win32Release\Shaders\CubesVS.cso
+  pch.cpp
+  imgui.cpp
+  imgui_draw.cpp
+  imgui_impl_dx12.cpp
+c:\users\mtlat\documents\kandidaten\project\ptg\ptg_gpu_dx12\external\imgui\imgui_impl_dx12.cpp(366): error C2338: Can't pack descriptor handle into TexID, 32-bit not supported yet.
+  imgui_impl_win32.cpp
+  imgui_widgets.cpp

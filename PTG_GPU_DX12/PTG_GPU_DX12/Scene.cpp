@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Scene.h"
 
+extern AppCtx gAppCtx;
 extern D3D12::Renderer gRenderer;
 extern std::vector<Shader> gShaderCollection;
 
@@ -16,10 +17,12 @@ Scene::~Scene()
 
 void Scene::Initialize(AppCtx appCtx)
 {
+	appCtx.camSettings.aspectRatio = (float)appCtx.width / appCtx.height;
 	m_camera.SetWorldPosition(appCtx.camSettings.x, appCtx.camSettings.y, appCtx.camSettings.z);
 	m_camera.SetMoveSpeed(appCtx.camSettings.moveSpeed);
 	m_camera.SetRotationalSpeed(appCtx.camSettings.rotSpeed);
 	m_camera.SetProjectionMatrix(appCtx.camSettings.fov, appCtx.camSettings.aspectRatio, appCtx.camSettings.nearZ, appCtx.camSettings.farZ);
+	m_camera.TransposeProjectioneMatrix();
 
 	m_rs.AddShader(VS, gShaderCollection[0]);
 	m_rs.AddShader(PS, gShaderCollection[1]);
@@ -52,7 +55,11 @@ void Scene::Update(float& dt)
 		if (SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode((SDL_bool)false);
 		else
+		{
 			SDL_SetRelativeMouseMode((SDL_bool)true);
+			SDL_WarpMouseInWindow(gAppCtx.pSDLWindow, (int)gAppCtx.width*0.5, (int)gAppCtx.height*0.5);
+			gAppCtx.mx = gAppCtx.my = 0;
+		}
 	}
 
 	m_camera.Update(dt);

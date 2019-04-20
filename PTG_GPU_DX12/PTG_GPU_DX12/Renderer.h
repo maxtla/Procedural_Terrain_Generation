@@ -17,7 +17,7 @@ namespace D3D12
 	};
 
 	const int MAX_CONSTANT_BUFFERS = 16;
-	const UINT SO_BUFFER_SIZE = 3072; //idk how much I'm even gonna need
+	const UINT SO_BUFFER_SIZE = 4608; //36 vertices * 32 Bytes * 4 cubes
 
 	class Renderer
 	{
@@ -60,7 +60,7 @@ namespace D3D12
 
 
 	private:
-		static const unsigned int BUFFER_COUNT = 2;
+		unsigned int BUFFER_COUNT = 2;
 		bool initialized = false;
 															    
 		ID3D12Debug* m_debugController = NULL;									    
@@ -71,7 +71,7 @@ namespace D3D12
 		ID3D12CommandAllocator * m_directAllocator = NULL;
 		ID3D12GraphicsCommandList * m_gCmdList = NULL; 
 
-		ID3D12Resource* m_renderTargets[BUFFER_COUNT] = { NULL, NULL };
+		ID3D12Resource** m_renderTargets = NULL;
 		ID3D12DescriptorHeap* m_rtvHeap = NULL;
 
 		ID3D12Resource * m_depthBuffer = NULL;
