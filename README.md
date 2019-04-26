@@ -2,7 +2,7 @@
 
 **Author:** Max Tlatlik
 
-**Supervisor:** Stefan Petersson
+**Supervisor:** Stefan Petersson, Hans Tap
 
 This project is part of my Bachelor Thesis and explores the topic of procedural terrain generation. 
 Specifically it aims to implement and examine an algorithm for procedural terrain generation on the GPU 
