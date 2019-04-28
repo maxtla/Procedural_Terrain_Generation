@@ -30,6 +30,8 @@ void Scene::Initialize(AppCtx appCtx)
 	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription());
 
 	m_gs.Init();
+
+	m_texBuff3D.Create3DTextureBuffer(TextureBuffer3D::Texture3DDesc());
 }
 
 void Scene::Update(float& dt)

@@ -87,6 +87,9 @@ void LoadShaders()
 
 	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("CubesVS.cso")); //2
 	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("CubesGS.cso")); //3
+
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("DensityVolume.cso")); //4
+	gShaderCollection.push_back(gShaderReader.LoadCompiledShader("MarchingCubes.cso")); //5
 }
 
 void Run()

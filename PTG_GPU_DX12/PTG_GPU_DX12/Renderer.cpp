@@ -200,6 +200,7 @@ namespace D3D12
 		SafeRelease(&m_CBVHeap);
 		SafeRelease(&m_depthHeap);
 		SafeRelease(&m_depthBuffer);
+		SafeRelease(&m_UAVHeap);
 
 		for (int i = 0; i < BUFFER_COUNT; i++)
 			SafeRelease(&m_renderTargets[i]);
@@ -361,11 +362,18 @@ namespace D3D12
 
 		dhd.NumDescriptors = MAX_CONSTANT_BUFFERS;
 		dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		dhd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
 		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_CBVHeap));
 		if (FAILED(hr))
 			return hr;
 		m_rtvHeap->SetName(L"CBV HEAP");
+
+		dhd.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
+		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_UAVHeap));
+		if (FAILED(hr))
+			return hr;
+		m_rtvHeap->SetName(L"UAV HEAP");
 
 		return hr;
 	}
@@ -398,7 +406,21 @@ namespace D3D12
 			cbvDescTable.NumDescriptorRanges = 1;
 		}
 
-		D3D12_ROOT_PARAMETER rootParams[2];
+		D3D12_ROOT_DESCRIPTOR_TABLE uavDescTable;
+		D3D12_DESCRIPTOR_RANGE uavRange;
+		//Less Dynamic constant buffers
+		{
+			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			uavRange.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
+			uavRange.BaseShaderRegister = 0; //u0
+			uavRange.RegisterSpace = 0;
+			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			uavDescTable.pDescriptorRanges = &uavRange;
+			uavDescTable.NumDescriptorRanges = 1;
+		}
+
+		D3D12_ROOT_PARAMETER rootParams[3];
 		{
 			rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			rootParams[0].Constants = rootConstants[0];
@@ -407,9 +429,13 @@ namespace D3D12
 			rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParams[1].DescriptorTable = cbvDescTable;
 			rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+			rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParams[2].DescriptorTable = uavDescTable;
+			rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		}
 
-		// Create descriptor of static sampler
+		// Create descriptor of static sampler LinearClamp
 		D3D12_STATIC_SAMPLER_DESC sampler{};
 		sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 		sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;

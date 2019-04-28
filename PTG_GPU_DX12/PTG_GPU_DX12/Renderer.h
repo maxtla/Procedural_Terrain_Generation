@@ -17,6 +17,7 @@ namespace D3D12
 	};
 
 	const int MAX_CONSTANT_BUFFERS = 16;
+	const int MAX_TEXTURE3D_BUFFERS = 4;
 	const UINT SO_BUFFER_SIZE = 4608; //36 vertices * 32 Bytes * 4 cubes
 
 	class Renderer
@@ -47,6 +48,7 @@ namespace D3D12
 		ID3D12CommandQueue * GetCommandQueue() { return m_directQ; }
 		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
 		ID3D12DescriptorHeap * GetCBVHeap() { return m_CBVHeap; }
+		ID3D12DescriptorHeap * GetUAVHeap() { return m_UAVHeap; }
 
 	private:
 		IDXGIAdapter1 * _findDX12Adapter(IDXGIFactory5 ** ppFactory);
@@ -78,6 +80,7 @@ namespace D3D12
 		ID3D12DescriptorHeap * m_depthHeap = NULL;
 
 		ID3D12DescriptorHeap * m_CBVHeap = NULL;
+		ID3D12DescriptorHeap * m_UAVHeap = NULL;
 
 		ID3D12RootSignature* m_rootSignature = NULL;
 
