@@ -12,6 +12,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 //Memory leak detection
 #define _CRTDBG_MAP_ALLOC

@@ -202,12 +202,14 @@
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="GeometryStage.h" />
     <ClInclude Include="ImGuiWrap.h" />
+    <ClInclude Include="MCStage.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderReader.h" />
     <ClInclude Include="SOBuffer.h" />
+    <ClInclude Include="StructuredVertexBuffer.h" />
     <ClInclude Include="TextureBuffer3D.h" />
   </ItemGroup>
   <ItemGroup>
@@ -246,6 +248,7 @@
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="DensityStage.cpp" />
     <ClCompile Include="GeometryStage.cpp" />
+    <ClCompile Include="MCStage.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -258,6 +261,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderReader.cpp" />
     <ClCompile Include="SOBuffer.cpp" />
+    <ClCompile Include="StructuredVertexBuffer.cpp" />
     <ClCompile Include="TextureBuffer3D.cpp" />
   </ItemGroup>
   <ItemGroup>

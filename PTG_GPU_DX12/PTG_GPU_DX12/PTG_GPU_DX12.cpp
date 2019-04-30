@@ -124,10 +124,6 @@ void Run()
 
 		gRenderer.EndFrame();
 		gRenderer.Present(gFence);
-
-		//float sleep = (1000.f / 60.f) - deltaTime;
-		//if (sleep > 0)
-		//	Sleep((DWORD)sleep);
 	}
 
 }

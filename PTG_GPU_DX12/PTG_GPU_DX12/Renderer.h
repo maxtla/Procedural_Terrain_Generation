@@ -19,6 +19,7 @@ namespace D3D12
 	const int MAX_CONSTANT_BUFFERS = 16;
 	const int MAX_TEXTURE3D_BUFFERS = 4;
 	const UINT SO_BUFFER_SIZE = 4608; //36 vertices * 32 Bytes * 4 cubes
+	const int MAX_VERTEX_BUFFER_SIZE = 23040; //sizeof(Triangle) * 5 * nrOfVoxelsPerVolume;
 
 	class Renderer
 	{
@@ -49,6 +50,11 @@ namespace D3D12
 		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
 		ID3D12DescriptorHeap * GetCBVHeap() { return m_CBVHeap; }
 		ID3D12DescriptorHeap * GetUAVHeap() { return m_UAVHeap; }
+		ID3D12DescriptorHeap * GetSRVHeap() { return m_SRVHeap; }
+
+		ID3D12GraphicsCommandList * GetComputeCmdList() { return m_computeCmdList; }
+		ID3D12CommandQueue * GetComputeCmdQueue() { return m_computeQ; }
+		ID3D12CommandAllocator * GetComputeAllocator() { return m_computeAllocator; }
 
 	private:
 		IDXGIAdapter1 * _findDX12Adapter(IDXGIFactory5 ** ppFactory);
@@ -73,6 +79,10 @@ namespace D3D12
 		ID3D12CommandAllocator * m_directAllocator = NULL;
 		ID3D12GraphicsCommandList * m_gCmdList = NULL; 
 
+		ID3D12CommandQueue * m_computeQ = NULL;
+		ID3D12CommandAllocator * m_computeAllocator = NULL;
+		ID3D12GraphicsCommandList * m_computeCmdList = NULL;
+
 		ID3D12Resource** m_renderTargets = NULL;
 		ID3D12DescriptorHeap* m_rtvHeap = NULL;
 
@@ -81,6 +91,7 @@ namespace D3D12
 
 		ID3D12DescriptorHeap * m_CBVHeap = NULL;
 		ID3D12DescriptorHeap * m_UAVHeap = NULL;
+		ID3D12DescriptorHeap * m_SRVHeap = NULL;
 
 		ID3D12RootSignature* m_rootSignature = NULL;
 

@@ -9,13 +9,13 @@ public:
 	struct Texture3DDesc
 	{
 		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
-		D3D12_TEX3D_UAV tex3D_UAV = { 0U, 0U, 8U };
+		D3D12_TEX3D_UAV tex3D_UAV = { 0U, 0U, 9U };
 		D3D12_RESOURCE_DESC resDesc = {
 			D3D12_RESOURCE_DIMENSION_TEXTURE3D, //ViewDimension
 			0U, //Alignment
-			8U, //Width
-			8U, //Height
-			8U, //Depth
+			9U, //Width
+			9U, //Height
+			9U, //Depth
 			1U, //MipLevels
 			DXGI_FORMAT_R32_FLOAT,
 			{1U, 0U}, //SampleDesc
@@ -24,7 +24,9 @@ public:
 		};
 	};
 	void Create3DTextureBuffer(Texture3DDesc desc);
-	void Bind(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList);
+	void BindUAV(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList);
+	void BindSRV(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList);
+	void Release() { if (m_3DTextureBuffer) m_3DTextureBuffer->Release(); }
 private:
 	ID3D12Resource * m_3DTextureBuffer = NULL;
 

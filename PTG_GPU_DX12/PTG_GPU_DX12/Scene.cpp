@@ -13,6 +13,7 @@ Scene::Scene()
 Scene::~Scene()
 {
 	m_gs.Release();
+	StructuredVertexBuffer::FreeHeap();
 }
 
 void Scene::Initialize(AppCtx appCtx)
@@ -31,7 +32,11 @@ void Scene::Initialize(AppCtx appCtx)
 
 	m_gs.Init();
 
-	m_texBuff3D.Create3DTextureBuffer(TextureBuffer3D::Texture3DDesc());
+	m_ds.Init();
+
+	StructuredVertexBuffer::InitHeap();
+
+	m_mcs.Init();
 }
 
 void Scene::Update(float& dt)
@@ -59,7 +64,7 @@ void Scene::Update(float& dt)
 		else
 		{
 			SDL_SetRelativeMouseMode((SDL_bool)true);
-			SDL_WarpMouseInWindow(gAppCtx.pSDLWindow, (int)gAppCtx.width*0.5, (int)gAppCtx.height*0.5);
+			SDL_WarpMouseInWindow(gAppCtx.pSDLWindow, (int)(gAppCtx.width*0.5), (int)(gAppCtx.height*0.5));
 			gAppCtx.mx = gAppCtx.my = 0;
 		}
 	}
@@ -69,10 +74,14 @@ void Scene::Update(float& dt)
 
 void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 {
+	m_ds.Dispatch();
+	m_mcs.FillVertexBuffers(m_ds.GetVolumes());
+
+
 	m_gs.DrawAndExecute();
 
 	gRenderer.StartFrame();
-
+	
 	m_camera.Draw(pCommandList);
 	m_rs.Apply(pCommandList);
 	m_gs.PrepareForRendering(pCommandList);

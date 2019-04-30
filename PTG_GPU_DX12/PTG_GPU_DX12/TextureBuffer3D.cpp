@@ -12,6 +12,7 @@ TextureBuffer3D::TextureBuffer3D()
 
 TextureBuffer3D::~TextureBuffer3D()
 {
+	
 }
 
 void TextureBuffer3D::Create3DTextureBuffer(Texture3DDesc tex3DDesc = Texture3DDesc())
@@ -36,6 +37,8 @@ void TextureBuffer3D::Create3DTextureBuffer(Texture3DDesc tex3DDesc = Texture3DD
 	);
 
 	ThrowIfFailed(hr);
+	std::wstring name = L"DensityVolume_" + std::to_wstring(TEXTURE3D_COUNT);
+	m_3DTextureBuffer->SetName(name.c_str());
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC desc;
 	ZeroMemory(&desc, sizeof(D3D12_UNORDERED_ACCESS_VIEW_DESC));
@@ -51,11 +54,29 @@ void TextureBuffer3D::Create3DTextureBuffer(Texture3DDesc tex3DDesc = Texture3DD
 
 	gRenderer.GetDevice()->CreateUnorderedAccessView(m_3DTextureBuffer, NULL, &desc, uavHeapHandle);
 
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ZeroMemory(&srvDesc, sizeof(srvDesc));
+
+	srvDesc.Format = tex3DDesc.format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Texture3D.MostDetailedMip = 0;
+	srvDesc.Texture3D.MipLevels = 1;
+	srvDesc.Texture3D.ResourceMinLODClamp = 0.f;
+
+	auto srvHeapHandle = gRenderer.GetSRVHeap()->GetCPUDescriptorHandleForHeapStart();
+	m_incrementSize = gRenderer.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	srvHeapHandle.ptr += (m_incrementSize * TEXTURE3D_COUNT);
+
+	gRenderer.GetDevice()->CreateShaderResourceView(m_3DTextureBuffer, &srvDesc, srvHeapHandle);
+
 	m_bufferSlot = TEXTURE3D_COUNT;
 	TEXTURE3D_COUNT++;
 }
 
-void TextureBuffer3D::Bind(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList)
+void TextureBuffer3D::BindUAV(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList)
 {
 	if (!m_3DTextureBuffer)
 		return;
@@ -63,6 +84,17 @@ void TextureBuffer3D::Bind(UINT rootParameterIndex, ID3D12GraphicsCommandList * 
 	auto uavHeapHandle = gRenderer.GetUAVHeap()->GetGPUDescriptorHandleForHeapStart();
 	uavHeapHandle.ptr += (m_incrementSize * m_bufferSlot);
 
-	pComputeCmdList->SetGraphicsRootDescriptorTable(rootParameterIndex, uavHeapHandle);
+	pComputeCmdList->SetComputeRootDescriptorTable(rootParameterIndex, uavHeapHandle);
 
+}
+
+void TextureBuffer3D::BindSRV(UINT rootParameterIndex, ID3D12GraphicsCommandList * pComputeCmdList)
+{
+	if (!m_3DTextureBuffer)
+		return;
+
+	auto srvHeapHandle = gRenderer.GetSRVHeap()->GetGPUDescriptorHandleForHeapStart();
+	srvHeapHandle.ptr += (m_incrementSize * m_bufferSlot);
+
+	pComputeCmdList->SetComputeRootDescriptorTable(rootParameterIndex, srvHeapHandle);
 }

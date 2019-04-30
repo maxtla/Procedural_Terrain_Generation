@@ -1,7 +1,8 @@
 #pragma once
 #include "Camera.h"
 #include "GeometryStage.h"
-#include "TextureBuffer3D.h"
+#include "DensityStage.h"
+#include "MCStage.h"
 //A scene contains the world, configurations for rendering, 
 // and manages the Camera, other input and per frame updates
 
@@ -19,6 +20,7 @@ private:
 	Camera m_camera;
 	GeometryStage m_gs;
 	RenderState m_rs;
-	TextureBuffer3D m_texBuff3D;
+	DensityStage m_ds;
+	MCStage m_mcs;
 };
 

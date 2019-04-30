@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ConstantBuffer.h"
 
+extern D3D12::Renderer gRenderer;
+
 int ConstantBuffer::BUFFER_COUNT = 0;
 
 ConstantBuffer::ConstantBuffer()
@@ -75,13 +77,16 @@ void ConstantBuffer::UpdateBuffer(void * src, size_t size)
 	m_buffer->Unmap(0, &rr);
 }
 
-void ConstantBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCommandList, ID3D12DescriptorHeap * pCBVHeap)
+void ConstantBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCommandList, bool compute = false)
 {
 	if (!m_buffer)
 		return;
 
-	auto cbvHeapHandle = pCBVHeap->GetGPUDescriptorHandleForHeapStart();
+	auto cbvHeapHandle = gRenderer.GetCBVHeap()->GetGPUDescriptorHandleForHeapStart();
 	cbvHeapHandle.ptr += (m_incrementSize * m_bufferSlot);
 
-	pCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, cbvHeapHandle);
+	if (compute)
+		pCommandList->SetComputeRootDescriptorTable(rootParameterIndex, cbvHeapHandle);
+	else
+		pCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, cbvHeapHandle);
 }

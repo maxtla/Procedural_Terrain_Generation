@@ -201,8 +201,12 @@ namespace D3D12
 		SafeRelease(&m_depthHeap);
 		SafeRelease(&m_depthBuffer);
 		SafeRelease(&m_UAVHeap);
+		SafeRelease(&m_computeAllocator);
+		SafeRelease(&m_computeQ);
+		SafeRelease(&m_computeCmdList);
+		SafeRelease(&m_SRVHeap);
 
-		for (int i = 0; i < BUFFER_COUNT; i++)
+		for (unsigned int i = 0; i < BUFFER_COUNT; i++)
 			SafeRelease(&m_renderTargets[i]);
 		delete[] m_renderTargets;
 
@@ -259,6 +263,13 @@ namespace D3D12
 		HRESULT hr = m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_directQ));
 		if (SUCCEEDED(hr))
 			m_directQ->SetName(L"Direct Command Queue");
+
+		commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+		hr = m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_computeQ));
+		if (SUCCEEDED(hr))
+			m_computeQ->SetName(L"Direct Command Queue");
 		return hr;
 	}
 
@@ -284,6 +295,26 @@ namespace D3D12
 		{
 			m_gCmdList->Close();
 			m_gCmdList->SetName(L"Direct Command List");
+		}
+
+		hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&m_computeAllocator));
+
+		if (FAILED(hr))
+			return hr;
+		m_directAllocator->SetName(L"Compute Allocator");
+
+		hr = m_device->CreateCommandList(
+			0,
+			D3D12_COMMAND_LIST_TYPE_COMPUTE,
+			m_computeAllocator,
+			nullptr,
+			IID_PPV_ARGS(&m_computeCmdList)
+		);
+
+		if (SUCCEEDED(hr))
+		{
+			m_computeCmdList->Close();
+			m_computeCmdList->SetName(L"Compute Command List");
 		}
 		return hr;
 	}
@@ -375,6 +406,11 @@ namespace D3D12
 			return hr;
 		m_rtvHeap->SetName(L"UAV HEAP");
 
+		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_SRVHeap));
+		if (FAILED(hr))
+			return hr;
+		m_rtvHeap->SetName(L"SRV HEAP");
+
 		return hr;
 	}
 
@@ -420,7 +456,21 @@ namespace D3D12
 			uavDescTable.NumDescriptorRanges = 1;
 		}
 
-		D3D12_ROOT_PARAMETER rootParams[3];
+		D3D12_ROOT_DESCRIPTOR_TABLE srvDescTable;
+		D3D12_DESCRIPTOR_RANGE srvRange;
+		//Less Dynamic constant buffers
+		{
+			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			srvRange.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
+			srvRange.BaseShaderRegister = 0; //t0
+			srvRange.RegisterSpace = 0;
+			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			srvDescTable.pDescriptorRanges = &srvRange;
+			srvDescTable.NumDescriptorRanges = 1;
+		}
+
+		D3D12_ROOT_PARAMETER rootParams[4];
 		{
 			rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			rootParams[0].Constants = rootConstants[0];
@@ -433,6 +483,11 @@ namespace D3D12
 			rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParams[2].DescriptorTable = uavDescTable;
 			rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+			rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParams[3].DescriptorTable = srvDescTable;
+			rootParams[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 		}
 
 		// Create descriptor of static sampler LinearClamp
@@ -472,6 +527,7 @@ namespace D3D12
 		{
 			_com_error err(hr);
 			OutputDebugStringW(err.ErrorMessage());
+			OutputDebugStringA((const char*)pError->GetBufferPointer());
 		}
 		//Use d3d12 device to create the root signature
 		UINT nodeMask = 0;
@@ -515,8 +571,8 @@ namespace D3D12
 		D3D12_RESOURCE_DESC textureDesc = {};
 		textureDesc.MipLevels = 1;
 		textureDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		textureDesc.Width = width;
-		textureDesc.Height = height;
+		textureDesc.Width = (UINT64)width;
+		textureDesc.Height = (UINT)height;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 		textureDesc.DepthOrArraySize = 1;
 		textureDesc.SampleDesc.Count = 1;

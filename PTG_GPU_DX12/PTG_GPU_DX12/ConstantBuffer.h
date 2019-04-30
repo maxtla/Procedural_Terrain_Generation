@@ -9,7 +9,7 @@ public:
 	void Release();
 
 	void UpdateBuffer(void * src, size_t size);
-	void BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCommandList, ID3D12DescriptorHeap * pCBVHeap);
+	void BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCommandList, bool compute);
 
 	const int GetBufferCount() { return BUFFER_COUNT; }
 private:
