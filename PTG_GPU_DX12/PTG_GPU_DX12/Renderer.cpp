@@ -4,6 +4,10 @@
 
 namespace D3D12
 {
+	UINT Renderer::CONSTANT_BUFFER_COUNT = 0U;
+	UINT Renderer::UAV_COUNT = 0U;
+	UINT Renderer::SRV_COUNT = 0U;
+
 	Renderer::Renderer()
 	{
 	}
@@ -197,14 +201,12 @@ namespace D3D12
 		SafeRelease(&m_gCmdList);
 		SafeRelease(&m_rtvHeap);
 		SafeRelease(&m_rootSignature);
-		SafeRelease(&m_CBVHeap);
+		SafeRelease(&m_DescHeap);
 		SafeRelease(&m_depthHeap);
 		SafeRelease(&m_depthBuffer);
-		SafeRelease(&m_UAVHeap);
 		SafeRelease(&m_computeAllocator);
 		SafeRelease(&m_computeQ);
 		SafeRelease(&m_computeCmdList);
-		SafeRelease(&m_SRVHeap);
 
 		for (unsigned int i = 0; i < BUFFER_COUNT; i++)
 			SafeRelease(&m_renderTargets[i]);
@@ -391,25 +393,14 @@ namespace D3D12
 			}
 		}
 
-		dhd.NumDescriptors = MAX_CONSTANT_BUFFERS;
+		dhd.NumDescriptors = HEAP_DESCRIPTOR_COUNT;
 		dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		dhd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
-		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_CBVHeap));
+		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_DescHeap));
 		if (FAILED(hr))
 			return hr;
-		m_rtvHeap->SetName(L"CBV HEAP");
-
-		dhd.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
-		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_UAVHeap));
-		if (FAILED(hr))
-			return hr;
-		m_rtvHeap->SetName(L"UAV HEAP");
-
-		hr = m_device->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&m_SRVHeap));
-		if (FAILED(hr))
-			return hr;
-		m_rtvHeap->SetName(L"SRV HEAP");
+		m_rtvHeap->SetName(L"COMMON DESCRIPTOR HEAP");
 
 		return hr;
 	}
@@ -433,8 +424,8 @@ namespace D3D12
 		//Less Dynamic constant buffers
 		{
 			cbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-			cbvRange.NumDescriptors = MAX_CONSTANT_BUFFERS;
-			cbvRange.BaseShaderRegister = 1; //b0 is reserved for ViewProj matrices, start from b1
+			cbvRange.NumDescriptors = 1; //1 cbv at most
+			cbvRange.BaseShaderRegister = 1; //b1
 			cbvRange.RegisterSpace = 0;
 			cbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -447,7 +438,7 @@ namespace D3D12
 		//Less Dynamic constant buffers
 		{
 			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-			uavRange.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
+			uavRange.NumDescriptors = 1;
 			uavRange.BaseShaderRegister = 0; //u0
 			uavRange.RegisterSpace = 0;
 			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -461,7 +452,7 @@ namespace D3D12
 		//Less Dynamic constant buffers
 		{
 			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			srvRange.NumDescriptors = MAX_TEXTURE3D_BUFFERS;
+			srvRange.NumDescriptors = 1;
 			srvRange.BaseShaderRegister = 0; //t0
 			srvRange.RegisterSpace = 0;
 			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;

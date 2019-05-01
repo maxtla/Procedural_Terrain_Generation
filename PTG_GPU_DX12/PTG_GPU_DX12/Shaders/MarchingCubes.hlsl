@@ -14,29 +14,18 @@ struct Triangle
 };
 
 RWStructuredBuffer<Triangle> vertexBuffer : register(u0);
-//RWBuffer<uint> indexCounter : register(u5); //Keeps track of how many triangles were written to the vertex buffer
 
 Texture3D<float> densityTexture : register(t0);
 SamplerState LinearClamp : register(s0);
 
-cbuffer Placeholder : register(b0)
-{
-	matrix pl;
-	matrix pl1;
-}
 
 cbuffer PerChunkData : register(b1) //I need to fix DescriptorHeap so everything can be bound from the same heap
 {
-	float invVoxelDim0;
-	float3 wsChunkPosLL0;
-	float3 wsChunkDim0;
-	int voxelDim0;
+	float invVoxelDim;
+	float3 wsChunkPosLL;
+	float3 wsChunkDim;
+	int voxelDim;
 };
-//Temporary "CB"
-static float invVoxelDim = 1.f/8.0f;
-static float3 wsChunkPosLL = float3(0.0f, 0.0f, 0.0f);
-static float3 wsChunkDim = float3(1.0f, 1.0f, 1.0f);
-static int voxelDim = 8;
 
 float3 localToWorldCoord(float3 localPos)
 {
@@ -59,17 +48,17 @@ float3 CalculateNormal(Triangle t)
 	return normalize(cross(edge1, edge2));
 }
 
-//float3 CalculateNormal(float3 uvw)
-//{
-//	float d;
-//	d = invVoxelDim;
-//	float3 gradient;
-//	gradient.x = densityTexture.SampleLevel(LinearClamp, uvw + float3(d, 0, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(-d, 0, 0), 0).x;
-//	gradient.y = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, d, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, -d, 0), 0).x;
-//	gradient.z = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, d), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, -d), 0).x;
-//
-//	return -normalize(gradient);
-//}
+float3 CalculateNormal(float3 uvw)
+{
+	float d;
+	d = invVoxelDim;
+	float3 gradient;
+	gradient.x = densityTexture.SampleLevel(LinearClamp, uvw + float3(d, 0, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(-d, 0, 0), 0).x;
+	gradient.y = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, d, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, -d, 0), 0).x;
+	gradient.z = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, d), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, -d), 0).x;
+
+	return -normalize(gradient);
+}
 
 [numthreads(1,1,1)]
 void main(uint3 id : SV_DispatchThreadID)
@@ -94,26 +83,18 @@ void main(uint3 id : SV_DispatchThreadID)
 	{
 		localCoords[i] = corners[i] * invVoxelDim;
 		int3 index = int3(corners[i]);
-		//cellDensity[i] = densityTexture.Load(int4(index, 0)).r;
+		cellDensity[i] = densityTexture.Load(int4(index, 0)).r;
 
-		corners[i].x = corners[i].x / (float)(voxelDim + 1);
+	/*	corners[i].x = corners[i].x / (float)(voxelDim + 1); //UVW coords alternative
 		corners[i].y = corners[i].y / (float)(voxelDim + 1);
 		corners[i].z = corners[i].z / (float)(voxelDim + 1);
-		cellDensity[i] = densityTexture.SampleLevel(LinearClamp, corners[i], 0);
+		cellDensity[i] = densityTexture.SampleLevel(LinearClamp, corners[i], 0);*/
 
 		if (cellDensity[i] >= 0) caseNumber |= 1 << i;
 	}
 
 	int numPolys = 0;
 	numPolys = case_to_numpolys[caseNumber]; //use the case number on the look up tables to retrieve the nr of triangles to be created
-
-	Triangle test;
-	test.vertices[0].pos = float3(id); test.vertices[0].nor = float3(caseNumber, numPolys, cellDensity[0]);
-	test.vertices[1].pos = float3(cellDensity[1], cellDensity[2], cellDensity[3]); test.vertices[1].nor = float3(cellDensity[4], cellDensity[5], cellDensity[6]);
-	test.vertices[2].pos = float3(cellDensity[7], -1, -1); test.vertices[2].nor = float3(-1, -1, -1);
-
-	vertexBuffer[vertexBuffer.IncrementCounter()] = test;
-	return;
 
 	for (int n = 0; n < numPolys; n++)
 	{
@@ -133,19 +114,15 @@ void main(uint3 id : SV_DispatchThreadID)
 
 			// linearly interpolate vertex between p1 and p2
 			float3 pLocal = CalculateVertex(p1Local, p2Local, cellDensity[v1], cellDensity[v2]);
-
+			float3 pLocalUVW = pLocal.xyz / (float)(voxelDim + 1);
+			float3 normal = CalculateNormal(pLocalUVW);
+			normal.y *= -1;
 			// convert from local to world coordinates
 			Vertex vert;
 			vert.pos = localToWorldCoord(pLocal);
-			//vert.vertPos = pLocal;
+			vert.nor = normal;
 			t.vertices[e] = vert;
 		}
-
-		float3 normal = CalculateNormal(t);
-		//normal.y *= -1;
-		t.vertices[0].nor = normal;
-		t.vertices[1].nor = normal;
-		t.vertices[2].nor = normal;
 
 		vertexBuffer[vertexBuffer.IncrementCounter()] = t;
 	}

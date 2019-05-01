@@ -11,9 +11,7 @@ public:
 	void UpdateBuffer(void * src, size_t size);
 	void BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCommandList, bool compute);
 
-	const int GetBufferCount() { return BUFFER_COUNT; }
 private:
-	static int BUFFER_COUNT;
 	
 	ID3D12Resource * m_buffer = NULL;
 	UINT m_bufferSlot;

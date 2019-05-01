@@ -25,7 +25,8 @@ void MCStage::Init()
 	m_rs.AddShader(CS, gShaderCollection[5]);
 	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription(), true);
 
-	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }));
+	m_chunks.push_back(Chunk({ 0.f, -1.f, 0.f }));
+	m_chunks.push_back(Chunk({ 1.0f, -1.0f, 0.0f }));
 
 	m_fence = gRenderer.MakeFence(0, 1, D3D12_FENCE_FLAG_NONE, L"MC_Fence");
 
@@ -42,16 +43,16 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes)
 	auto cmdAllo = gRenderer.GetComputeAllocator();
 	auto cmdList = gRenderer.GetComputeCmdList();
 	auto rs = gRenderer.GetRootSignature();
+	auto heap = gRenderer.GetDescriptorHeap();
 
 	cmdAllo->Reset();
 	cmdList->Reset(cmdAllo, NULL);
 
 	//Prepare pipeline
 	cmdList->SetComputeRootSignature(rs);
-	m_rs.Apply(cmdList);
+	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)&heap);
 
-	ID3D12DescriptorHeap* heaps[1] = { StructuredVertexBuffer::m_heap };
-	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)heaps);
+	m_rs.Apply(cmdList);
 
 	for (int i = 0; i < m_chunks.size(); i++)
 		m_chunks[i].GenerateVertices(&volumes[i]);
@@ -62,4 +63,10 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes)
 	cmdQ->ExecuteCommandLists(1, (ID3D12CommandList*const*)&cmdList);
 
 	gRenderer.WaitForGPUCompletion(cmdQ, m_fence);
+}
+
+void MCStage::PrepareForRendering(ID3D12GraphicsCommandList * pCmdList)
+{
+	for (auto &c : m_chunks)
+		c.Render(pCmdList);
 }

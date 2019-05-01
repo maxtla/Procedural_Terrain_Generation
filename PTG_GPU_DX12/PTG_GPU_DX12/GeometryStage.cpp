@@ -88,14 +88,14 @@ void GeometryStage::_initRenderState()
 	soDeclarations[0].SemanticName = "POSITION";
 	soDeclarations[0].SemanticIndex = 0;
 	soDeclarations[0].StartComponent = 0;
-	soDeclarations[0].ComponentCount = 4;
+	soDeclarations[0].ComponentCount = 3;
 	soDeclarations[0].OutputSlot = 0;
 
 	soDeclarations[1].Stream = 0;
 	soDeclarations[1].SemanticName = "COLOR";
 	soDeclarations[1].SemanticIndex = 0;
 	soDeclarations[1].StartComponent = 0;
-	soDeclarations[1].ComponentCount = 4;
+	soDeclarations[1].ComponentCount = 3;
 	soDeclarations[1].OutputSlot = 0;
 
 	UINT bufferStrides[1];

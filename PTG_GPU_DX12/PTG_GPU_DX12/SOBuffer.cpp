@@ -18,7 +18,7 @@ SOBuffer::~SOBuffer()
 
 void SOBuffer::Init()
 {
-	m_bufferSize = D3D12::SO_BUFFER_SIZE;
+	m_bufferSize = SO_BUFFER_SIZE;
 
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	gRenderer.GetDevice()->CreateCommittedResource(

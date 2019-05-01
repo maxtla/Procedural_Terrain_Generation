@@ -10,7 +10,7 @@ public:
 
 	void Init();
 	void FillVertexBuffers(std::vector<TextureBuffer3D> &volumes);
-	void Render();
+	void PrepareForRendering(ID3D12GraphicsCommandList * pCmdList);
 private:
 	RenderState m_rs;
 	D3D12::Fence * m_fence = NULL;

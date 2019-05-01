@@ -7,6 +7,5 @@ struct PxlInput
 
 float4 PSMain(PxlInput input) : SV_TARGET
 {
-	return float4(0.33441f, 0.3f, 0.122344f, 1.0f);
-    //return input.color;
+    return saturate(float4(sin(input.sv_pos.x), 0.5f, 0.5f, 0.5f));
 }

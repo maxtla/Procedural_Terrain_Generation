@@ -3,7 +3,6 @@
 
 extern D3D12::Renderer gRenderer;
 
-int ConstantBuffer::BUFFER_COUNT = 0;
 
 ConstantBuffer::ConstantBuffer()
 {
@@ -16,7 +15,7 @@ ConstantBuffer::~ConstantBuffer()
 
 HRESULT ConstantBuffer::CreateConstantBuffer(ID3D12DescriptorHeap * pCBVHeap, ID3D12Device * pDev, size_t bufferWidth)
 {
-	if (BUFFER_COUNT + 1 == D3D12::MAX_CONSTANT_BUFFERS)
+	if (D3D12::Renderer::CONSTANT_BUFFER_COUNT + 1 == HEAP_MAX_CONSTANT_BUFFERS)
 		return E_FAIL;
 
 	HRESULT hr;
@@ -46,12 +45,11 @@ HRESULT ConstantBuffer::CreateConstantBuffer(ID3D12DescriptorHeap * pCBVHeap, ID
 		auto cbvHeapHandle = pCBVHeap->GetCPUDescriptorHandleForHeapStart();
 		m_incrementSize = pDev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		cbvHeapHandle.ptr += (m_incrementSize * BUFFER_COUNT);
+		cbvHeapHandle.ptr += m_incrementSize * (HEAP_CONSTANT_BUFFER_OFFSET + D3D12::Renderer::CONSTANT_BUFFER_COUNT);
 
 		pDev->CreateConstantBufferView(&cbvDesc, cbvHeapHandle);
 
-		m_bufferSlot = BUFFER_COUNT;
-		BUFFER_COUNT++;
+		m_bufferSlot = D3D12::Renderer::CONSTANT_BUFFER_COUNT++;
 	}
 	return hr;
 }
@@ -82,8 +80,8 @@ void ConstantBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandLi
 	if (!m_buffer)
 		return;
 
-	auto cbvHeapHandle = gRenderer.GetCBVHeap()->GetGPUDescriptorHandleForHeapStart();
-	cbvHeapHandle.ptr += (m_incrementSize * m_bufferSlot);
+	auto cbvHeapHandle = gRenderer.GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
+	cbvHeapHandle.ptr += m_incrementSize *(HEAP_CONSTANT_BUFFER_OFFSET +  m_bufferSlot);
 
 	if (compute)
 		pCommandList->SetComputeRootDescriptorTable(rootParameterIndex, cbvHeapHandle);

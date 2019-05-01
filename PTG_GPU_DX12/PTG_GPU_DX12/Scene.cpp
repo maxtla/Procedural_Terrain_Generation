@@ -13,7 +13,6 @@ Scene::Scene()
 Scene::~Scene()
 {
 	m_gs.Release();
-	StructuredVertexBuffer::FreeHeap();
 }
 
 void Scene::Initialize(AppCtx appCtx)
@@ -33,8 +32,6 @@ void Scene::Initialize(AppCtx appCtx)
 	m_gs.Init();
 
 	m_ds.Init();
-
-	StructuredVertexBuffer::InitHeap();
 
 	m_mcs.Init();
 }
@@ -74,9 +71,13 @@ void Scene::Update(float& dt)
 
 void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 {
-	m_ds.Dispatch();
-	m_mcs.FillVertexBuffers(m_ds.GetVolumes());
-
+	static bool runOnce = true;
+	if (runOnce)
+	{
+		m_ds.Dispatch();
+		m_mcs.FillVertexBuffers(m_ds.GetVolumes());
+		//runOnce = false;
+	}
 
 	m_gs.DrawAndExecute();
 
@@ -85,4 +86,5 @@ void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 	m_camera.Draw(pCommandList);
 	m_rs.Apply(pCommandList);
 	m_gs.PrepareForRendering(pCommandList);
+	m_mcs.PrepareForRendering(pCommandList);
 }

@@ -5,8 +5,21 @@
 
 struct AppCtx;
 
+//Gloabal constants
+const UINT HEAP_CONSTANT_BUFFER_OFFSET = 0U;
+const UINT HEAP_MAX_CONSTANT_BUFFERS = 16U;
+const UINT HEAP_UAV_OFFSET = HEAP_CONSTANT_BUFFER_OFFSET + HEAP_MAX_CONSTANT_BUFFERS;
+const UINT HEAP_MAX_UAV = 16U;
+const UINT HEAP_SRV_OFFSET = HEAP_UAV_OFFSET + HEAP_MAX_UAV;
+const UINT HEAP_MAX_SRV = 16U;
+const UINT HEAP_DESCRIPTOR_COUNT = HEAP_MAX_CONSTANT_BUFFERS + HEAP_MAX_UAV + HEAP_MAX_SRV;
+
+const UINT SO_BUFFER_SIZE = 4608; //36 vertices * 32 Bytes * 4 cubes
+const UINT MAX_VERTEX_BUFFER_SIZE = 184320; //sizeof(Triangle) * 5 * nrOfVoxelsPerVolume;
+
 namespace D3D12
 {
+
 	struct Fence
 	{
 		//Synchronization objects
@@ -16,14 +29,14 @@ namespace D3D12
 		UINT64 m_fenceValue = 0;
 	};
 
-	const int MAX_CONSTANT_BUFFERS = 16;
-	const int MAX_TEXTURE3D_BUFFERS = 4;
-	const UINT SO_BUFFER_SIZE = 4608; //36 vertices * 32 Bytes * 4 cubes
-	const int MAX_VERTEX_BUFFER_SIZE = 23040; //sizeof(Triangle) * 5 * nrOfVoxelsPerVolume;
 
 	class Renderer
 	{
 	public:
+		static UINT CONSTANT_BUFFER_COUNT;
+		static UINT UAV_COUNT;
+		static UINT SRV_COUNT;
+
 		Renderer();
 		~Renderer();
 
@@ -48,9 +61,7 @@ namespace D3D12
 		ID3D12GraphicsCommandList * GetCommandList() { return m_gCmdList; }
 		ID3D12CommandQueue * GetCommandQueue() { return m_directQ; }
 		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
-		ID3D12DescriptorHeap * GetCBVHeap() { return m_CBVHeap; }
-		ID3D12DescriptorHeap * GetUAVHeap() { return m_UAVHeap; }
-		ID3D12DescriptorHeap * GetSRVHeap() { return m_SRVHeap; }
+		ID3D12DescriptorHeap * GetDescriptorHeap() { return m_DescHeap; }
 
 		ID3D12GraphicsCommandList * GetComputeCmdList() { return m_computeCmdList; }
 		ID3D12CommandQueue * GetComputeCmdQueue() { return m_computeQ; }
@@ -89,9 +100,7 @@ namespace D3D12
 		ID3D12Resource * m_depthBuffer = NULL;
 		ID3D12DescriptorHeap * m_depthHeap = NULL;
 
-		ID3D12DescriptorHeap * m_CBVHeap = NULL;
-		ID3D12DescriptorHeap * m_UAVHeap = NULL;
-		ID3D12DescriptorHeap * m_SRVHeap = NULL;
+		ID3D12DescriptorHeap * m_DescHeap = NULL;
 
 		ID3D12RootSignature* m_rootSignature = NULL;
 

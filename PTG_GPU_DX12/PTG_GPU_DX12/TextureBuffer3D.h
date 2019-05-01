@@ -2,8 +2,6 @@
 class TextureBuffer3D
 {
 public:
-	static int TEXTURE3D_COUNT;
-
 	TextureBuffer3D();
 	~TextureBuffer3D();
 	struct Texture3DDesc
@@ -30,7 +28,8 @@ public:
 private:
 	ID3D12Resource * m_3DTextureBuffer = NULL;
 
-	UINT m_bufferSlot;
+	UINT m_UAVSlot;
+	UINT m_SRVSlot;
 	UINT m_incrementSize;
 };
 

@@ -79,15 +79,16 @@ RenderState::StateDescription RenderState::GetDefaultStateDescription()
 	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	desc.SampleMask = 0xffffffff;
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	//desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-	//desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	
 	static D3D12_INPUT_ELEMENT_DESC inputElementDescs[2];
-	inputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputElementDescs[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	desc.InputLayout.pInputElementDescs = inputElementDescs;
 	desc.InputLayout.NumElements = _ARRAYSIZE(inputElementDescs);
