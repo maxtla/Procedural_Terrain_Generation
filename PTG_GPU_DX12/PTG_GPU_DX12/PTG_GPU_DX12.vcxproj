@@ -200,7 +200,6 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="DensityStage.h" />
     <ClInclude Include="Drawable.h" />
-    <ClInclude Include="GeometryStage.h" />
     <ClInclude Include="ImGuiWrap.h" />
     <ClInclude Include="MCStage.h" />
     <ClInclude Include="pch.h" />
@@ -208,7 +207,6 @@
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderReader.h" />
-    <ClInclude Include="SOBuffer.h" />
     <ClInclude Include="StructuredVertexBuffer.h" />
     <ClInclude Include="TextureBuffer3D.h" />
   </ItemGroup>
@@ -247,7 +245,6 @@
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="DensityStage.cpp" />
-    <ClCompile Include="GeometryStage.cpp" />
     <ClCompile Include="MCStage.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -260,7 +257,6 @@
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderReader.cpp" />
-    <ClCompile Include="SOBuffer.cpp" />
     <ClCompile Include="StructuredVertexBuffer.cpp" />
     <ClCompile Include="TextureBuffer3D.cpp" />
   </ItemGroup>
@@ -296,26 +292,6 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\CubesGS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\CubesVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\DensityVolume.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>

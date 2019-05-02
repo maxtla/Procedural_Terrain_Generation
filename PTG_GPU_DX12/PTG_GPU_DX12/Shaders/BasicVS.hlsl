@@ -8,13 +8,13 @@ cbuffer ViewProj : register(b0)
 struct VtxInput
 {
     float3 w_pos : POSITION;
-    float3 color : NORMAL;
+    float3 normal : NORMAL;
 };
 
 struct VtxOutput
 {
     float4 sv_pos : SV_POSITION;
-    float4 color  : COLOR;
+    float4 normal  : NORMAL;
 };
 
 VtxOutput VSMain(VtxInput input)
@@ -25,7 +25,7 @@ VtxOutput VSMain(VtxInput input)
     output.sv_pos = mul(w_pos, viewM);
     output.sv_pos = mul(output.sv_pos, projM);
 
-	output.color = float4(input.color, 1.0f);
+	output.normal = float4(input.normal, 1.0f);
 
     return output;
 }

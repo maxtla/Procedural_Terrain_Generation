@@ -1,6 +1,5 @@
 #pragma once
 #include "Camera.h"
-#include "GeometryStage.h"
 #include "DensityStage.h"
 #include "MCStage.h"
 //A scene contains the world, configurations for rendering, 
@@ -18,7 +17,6 @@ public:
 	void Draw(ID3D12GraphicsCommandList * pCommandList);
 private:
 	Camera m_camera;
-	GeometryStage m_gs;
 	RenderState m_rs;
 	DensityStage m_ds;
 	MCStage m_mcs;

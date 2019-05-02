@@ -12,7 +12,6 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-	m_gs.Release();
 }
 
 void Scene::Initialize(AppCtx appCtx)
@@ -28,8 +27,6 @@ void Scene::Initialize(AppCtx appCtx)
 	m_rs.AddShader(PS, gShaderCollection[1]);
 
 	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription());
-
-	m_gs.Init();
 
 	m_ds.Init();
 
@@ -75,16 +72,13 @@ void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 	if (runOnce)
 	{
 		m_ds.Dispatch();
-		m_mcs.FillVertexBuffers(m_ds.GetVolumes());
-		//runOnce = false;
+		runOnce = false;
 	}
-
-	m_gs.DrawAndExecute();
+	m_mcs.FillVertexBuffers(m_ds.GetVolumes());
 
 	gRenderer.StartFrame();
 	
 	m_camera.Draw(pCommandList);
 	m_rs.Apply(pCommandList);
-	m_gs.PrepareForRendering(pCommandList);
 	m_mcs.PrepareForRendering(pCommandList);
 }

@@ -94,7 +94,6 @@ void StructuredVertexBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsC
 	UINT* counterValue = nullptr;
 	D3D12_RANGE rr = { 0,0 };
 	m_counter->Map(0, &rr, reinterpret_cast<void**>(&counterValue));
-	std::cout << *counterValue << std::endl;
 	ZeroMemory(counterValue, sizeof(UINT));
 	m_counter->Unmap(0, nullptr);
 
@@ -117,7 +116,7 @@ void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList)
 
 	m_vbv.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
 	m_vbv.SizeInBytes = (*counterValue) * 72;
-	m_vbv.StrideInBytes = 72;
+	m_vbv.StrideInBytes = VERTEX_BYTE_STRIDE;
 
 
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_vertexBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, 0);
@@ -126,7 +125,7 @@ void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList)
 
 	pCmdList->IASetVertexBuffers(0, 1, &m_vbv);
 
-	pCmdList->DrawInstanced(*counterValue, 1, 0, 0);
+	pCmdList->DrawInstanced((*counterValue)*3, 1, 0, 0);
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0);
 }

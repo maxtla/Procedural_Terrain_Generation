@@ -46,7 +46,7 @@ void Chunk::GenerateVertices(TextureBuffer3D * pDensityTexture)
 	pDensityTexture->BindSRV(3, cmdList);
 
 
-	cmdList->Dispatch(8, 8, 8);
+	cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
 }
 
 void Chunk::Render(ID3D12GraphicsCommandList * pCmdList)

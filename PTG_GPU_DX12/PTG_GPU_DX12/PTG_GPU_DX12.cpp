@@ -115,7 +115,13 @@ void Run()
 		}
 		//New frame
 		gImGuiWrap.Frame_IMGUI();
-		
+		{
+			ImGui::Begin("Performance Metrics");
+			std::stringstream ss;
+			ss << "\nFrametime: " << deltaTime << "\n\nFramerate: " << (UINT)((1/deltaTime)*1000U);
+			ImGui::Text(ss.str().c_str());
+			ImGui::End();
+		}
 		//Do work on the CPU -> Update()...
 		gScene->Update(deltaTime);
 		//Populate command list
