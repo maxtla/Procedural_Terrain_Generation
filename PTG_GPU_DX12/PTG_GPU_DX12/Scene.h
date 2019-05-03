@@ -20,5 +20,6 @@ private:
 	RenderState m_rs;
 	DensityStage m_ds;
 	MCStage m_mcs;
+	bool m_async = false;
 };
 

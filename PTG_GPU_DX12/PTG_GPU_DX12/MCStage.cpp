@@ -3,6 +3,7 @@
 
 extern std::vector<Shader> gShaderCollection;
 extern D3D12::Renderer gRenderer;
+extern UINT CHUNK_THREAD_GROUPS;
 
 MCStage::MCStage()
 {
@@ -25,7 +26,8 @@ void MCStage::Init()
 	m_rs.AddShader(CS, gShaderCollection[5]);
 	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription(), true);
 
-	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, {1.0f, 1.0f, 1.0f}, 32));
+	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, {0.5f, 0.25f, 0.5f}, 2)); //Pos, Dimension (is scaling of the chunk), Cells
+	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, { 0.5f, 0.25f, 0.5f }, 2));
 
 	m_fence = gRenderer.MakeFence(0, 1, D3D12_FENCE_FLAG_NONE, L"MC_Fence");
 
@@ -36,36 +38,64 @@ void MCStage::Init()
 	}
 }
 
-void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes)
+void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool async)
 {
+	static bool wasTurnedOff = false;
+	static bool previousState = false;
+
+	if (previousState && !async)
+		wasTurnedOff = true;
+
 	auto cmdQ = gRenderer.GetComputeCmdQueue();
 	auto cmdAllo = gRenderer.GetComputeAllocator();
 	auto cmdList = gRenderer.GetComputeCmdList();
 	auto rs = gRenderer.GetRootSignature();
 	auto heap = gRenderer.GetDescriptorHeap();
 
+	if (async || wasTurnedOff)
+	{
+		gRenderer.WaitForGPUCompletion(cmdQ, m_fence); //Previous resource were use for rendering last frame, this frame the current resources need to finish
+		if (wasTurnedOff)
+			m_index = 0;
+		else
+			m_index = (m_index + 1) % 2;
+	}
+
+	previousState = async;
+
 	cmdAllo->Reset();
 	cmdList->Reset(cmdAllo, NULL);
 
+	UINT values[2] = { CHUNK_THREAD_GROUPS , NUM_THREADS_PER_GROUP };
 	//Prepare pipeline
 	cmdList->SetComputeRootSignature(rs);
 	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)&heap);
+	cmdList->SetComputeRoot32BitConstants(4, 2, (const void*)values, 0);
 
 	m_rs.Apply(cmdList);
 
-	for (int i = 0; i < m_chunks.size(); i++)
-		m_chunks[i].GenerateVertices(&volumes[i]);
+	m_chunks[m_index].GenerateVertices(&volumes[0]);
 
 	cmdList->Close();
 
-
 	cmdQ->ExecuteCommandLists(1, (ID3D12CommandList*const*)&cmdList);
-
-	gRenderer.WaitForGPUCompletion(cmdQ, m_fence);
+	if (!async)
+		gRenderer.WaitForGPUCompletion(cmdQ, m_fence); //Resources need to finish before rendering
 }
 
-void MCStage::PrepareForRendering(ID3D12GraphicsCommandList * pCmdList)
+void MCStage::PrepareForRendering(ID3D12GraphicsCommandList * pCmdList, bool async)
 {
-	for (auto &c : m_chunks)
-		c.Render(pCmdList);
+	if (async)
+		m_chunks[(m_index + 1) % 2].Render(pCmdList); //Use the previous finished resource for this frame for rendering
+	else
+		m_chunks[m_index].Render(pCmdList);
+}
+
+void MCStage::Update(float & dt)
+{
+	ImGui::Begin("Chunk Data");
+	ImGui::Text(m_chunks[m_index].GetChunkInfoStr().c_str());
+	ImGui::Text("\nChunk ThreadGroups");
+	ImGui::SliderInt("", (int*)&CHUNK_THREAD_GROUPS, 1, DENSITY_THREAD_GROUPS);
+	ImGui::End();
 }

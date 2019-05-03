@@ -15,9 +15,10 @@ const UINT HEAP_MAX_SRV = 16U;
 const UINT HEAP_DESCRIPTOR_COUNT = HEAP_MAX_CONSTANT_BUFFERS + HEAP_MAX_UAV + HEAP_MAX_SRV;
 
 const UINT VERTEX_BYTE_STRIDE = sizeof(float) * 6;
-const UINT DENSITY_THREAD_GROUPS = 4U;
-const UINT CHUNK_THREAD_GROUPS = 4U;
-const UINT DENSITY_VALUES = (UINT)pow((DENSITY_THREAD_GROUPS* DENSITY_THREAD_GROUPS)-1, 3);
+const UINT DENSITY_THREAD_GROUPS = 4U; //22 Thread groups * 10 is the absolute maximum because of the vertex buffer
+//UINT CHUNK_THREAD_GROUPS;
+const UINT NUM_THREADS_PER_GROUP = 8U;
+const UINT DENSITY_VALUES = (UINT)pow((DENSITY_THREAD_GROUPS* NUM_THREADS_PER_GROUP)-1, 3);
 const UINT MAX_VERTEX_BUFFER_SIZE = 72*5*DENSITY_VALUES;
 
 namespace D3D12
@@ -46,7 +47,8 @@ namespace D3D12
 		bool Init(AppCtx appCtx);
 		void StartFrame();
 		void EndFrame();
-		void Present(Fence * fence);
+		void RenderFrame(Fence* fence);
+		void Present();
 		void Reset();
 
 		Fence * MakeFence(UINT64 initialValue, UINT64 completionValue, D3D12_FENCE_FLAGS flag, const wchar_t * debugName = L"FenceObject");

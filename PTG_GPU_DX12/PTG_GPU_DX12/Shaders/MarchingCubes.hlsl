@@ -18,6 +18,11 @@ RWStructuredBuffer<Triangle> vertexBuffer : register(u0);
 Texture3D<float> densityTexture : register(t0);
 SamplerState LinearClamp : register(s0);
 
+cbuffer PerDispatchData : register(b2)
+{
+	uint ThreadGroups;
+	uint NumThreadsPerGroup;
+};
 
 cbuffer PerChunkData : register(b1) //I need to fix DescriptorHeap so everything can be bound from the same heap
 {
@@ -62,12 +67,12 @@ float3 CalculateNormal(float3 uvw)
 
 	return -normalize(gradient);
 }
-
-[numthreads(2,2,2)]
+//largest possible product is 10*10*10 = 1000 since max threads per group is 1024 for shader model 5.0
+[numthreads(8,8,8)]
 void main(uint3 id : SV_DispatchThreadID)
 {
-	int border = 8;
-	if (id.x == border || id.y == border || id.z == border)
+	uint border = ThreadGroups* NumThreadsPerGroup;
+	if (id.x >= border || id.y >= border || id.z >= border)
 		return;
 
 	float cellDensity[8];	// density values at each corner of the voxel/cell (local to each thread)

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Renderer.h"
 
+UINT CHUNK_THREAD_GROUPS = DENSITY_THREAD_GROUPS;
 
 namespace D3D12
 {
@@ -135,13 +136,16 @@ namespace D3D12
 		m_gCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 		m_gCmdList->Close();
 
-		m_directQ->ExecuteCommandLists(1, (ID3D12CommandList * const*)&m_gCmdList);
 	}
 
-	void Renderer::Present(Fence * fence)
+	void Renderer::RenderFrame(Fence * fence)
 	{
+		m_directQ->ExecuteCommandLists(1, (ID3D12CommandList * const*)&m_gCmdList);
 		WaitForGPUCompletion(m_directQ, fence);
+	}
 
+	void Renderer::Present()
+	{
 		DXGI_PRESENT_PARAMETERS pp = {};
 		m_swapChain->Present1(0, 0, &pp);
 	}
@@ -414,10 +418,14 @@ namespace D3D12
 	// 4. How many DWORDs did we use (Max size of 64, or 63 with enabled IA)
 
 		//Dynamic constant buffers
-		D3D12_ROOT_CONSTANTS rootConstants[1];
+		D3D12_ROOT_CONSTANTS rootConstants[2];
 		rootConstants[0].Num32BitValues = 32; //We have two 4x4 Matrices, View and Proj
 		rootConstants[0].RegisterSpace = 0;
 		rootConstants[0].ShaderRegister = 0; //b0
+
+		rootConstants[1].Num32BitValues = 2; //ThreadGroups and NumofThreadsperGroup
+		rootConstants[1].RegisterSpace = 0;
+		rootConstants[1].ShaderRegister = 2; //b2
 
 		D3D12_ROOT_DESCRIPTOR_TABLE cbvDescTable;
 		D3D12_DESCRIPTOR_RANGE cbvRange;
@@ -461,7 +469,7 @@ namespace D3D12
 			srvDescTable.NumDescriptorRanges = 1;
 		}
 
-		D3D12_ROOT_PARAMETER rootParams[4];
+		D3D12_ROOT_PARAMETER rootParams[5];
 		{
 			rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			rootParams[0].Constants = rootConstants[0];
@@ -478,6 +486,10 @@ namespace D3D12
 			rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParams[3].DescriptorTable = srvDescTable;
 			rootParams[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+			rootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+			rootParams[4].Constants = rootConstants[1];
+			rootParams[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 		}
 

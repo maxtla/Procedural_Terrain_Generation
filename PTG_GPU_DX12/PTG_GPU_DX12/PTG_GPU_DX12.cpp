@@ -118,18 +118,20 @@ void Run()
 		{
 			ImGui::Begin("Performance Metrics");
 			std::stringstream ss;
-			ss << "\nFrametime: " << deltaTime << "\n\nFramerate: " << (UINT)((1/deltaTime)*1000U);
+			ss << "\nFrametime: " << deltaTime << " ms" << "\n\nFramerate: " << (UINT)((1/deltaTime)*1000U);
 			ImGui::Text(ss.str().c_str());
 			ImGui::End();
 		}
 		//Do work on the CPU -> Update()...
 		gScene->Update(deltaTime);
-		//Populate command list
+		//Populate command list(s)
+		gRenderer.StartFrame();
 		gScene->Draw(gRenderer.GetCommandList());
 		gImGuiWrap.Render_IMGUI(gRenderer.GetCommandList());
-
 		gRenderer.EndFrame();
-		gRenderer.Present(gFence);
+		//Execute comman list
+		gRenderer.RenderFrame(gFence);
+		gRenderer.Present();
 	}
 
 }

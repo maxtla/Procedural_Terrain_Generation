@@ -15,6 +15,8 @@ public:
 
 	void GenerateVertices(TextureBuffer3D * pDensityTexture);
 	void Render(ID3D12GraphicsCommandList * pCmdList);
+
+	std::string GetChunkInfoStr();
 private:
 	__declspec(align(256))
 	struct CBData

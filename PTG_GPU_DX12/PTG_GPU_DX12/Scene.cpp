@@ -64,6 +64,19 @@ void Scene::Update(float& dt)
 	}
 
 	m_camera.Update(dt);
+	m_mcs.Update(dt);
+
+	ImGui::Begin("Async Compute");
+	if (!m_async)
+	{
+		m_async = ImGui::Button("Turn on async", { 100, 25 });
+	}
+	else
+	{
+		if (ImGui::Button("Turn off async", { 105, 25 }))
+			m_async = false;
+	}
+	ImGui::End();
 }
 
 void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
@@ -74,11 +87,10 @@ void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 		m_ds.Dispatch();
 		runOnce = false;
 	}
-	m_mcs.FillVertexBuffers(m_ds.GetVolumes());
 
-	gRenderer.StartFrame();
-	
+	m_mcs.FillVertexBuffers(m_ds.GetVolumes(), m_async);
+
 	m_camera.Draw(pCommandList);
 	m_rs.Apply(pCommandList);
-	m_mcs.PrepareForRendering(pCommandList);
+	m_mcs.PrepareForRendering(pCommandList, m_async);
 }

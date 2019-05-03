@@ -125,7 +125,8 @@ void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList)
 
 	pCmdList->IASetVertexBuffers(0, 1, &m_vbv);
 
-	pCmdList->DrawInstanced((*counterValue)*3, 1, 0, 0);
+	m_triangleCount = (*counterValue) * 3;
+	pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0);
 }

@@ -155,10 +155,18 @@ float snoise(float3 v)
 	);
 }
 
+cbuffer PerDispatchData : register(b2)
+{
+	uint ThreadGroups;
+	uint NumThreadsPerGroup;
+};
 
-[numthreads(2, 2, 2)]
+[numthreads(8,8,8)]
 void main( uint3 id : SV_DispatchThreadID )
 {
+	uint border = ThreadGroups * NumThreadsPerGroup;
+	if (id.x > border || id.y > border || id.z > border)
+		return;
 	//Simplex noise cube
 	densityBuffer[id] = snoise(float3(id));
 }
