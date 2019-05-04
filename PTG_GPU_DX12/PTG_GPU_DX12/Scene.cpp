@@ -12,6 +12,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+	D3D12Profiler::Release();
 }
 
 void Scene::Initialize(AppCtx appCtx)
@@ -31,6 +32,8 @@ void Scene::Initialize(AppCtx appCtx)
 	m_ds.Init();
 
 	m_mcs.Init();
+
+	D3D12Profiler::Init(2, 2);
 }
 
 void Scene::Update(float& dt)
@@ -77,6 +80,27 @@ void Scene::Update(float& dt)
 			m_async = false;
 	}
 	ImGui::End();
+
+	ImGui::Begin("D3D12 Profiler");
+	if (!m_profile)
+	{
+		m_profile = ImGui::Button("Start profiling", { 112, 25 });
+	}
+	else
+	{
+		if (ImGui::Button("Stop profiling", { 105, 25 }))
+			m_profile = false;
+
+		D3D12Profiler::MapData();
+		D3D12Profiler::MapDataCompute();
+		std::stringstream ss;
+		ss << "Mesh generation time (ms): " << D3D12Profiler::GetDurationCompute(0, 1);
+		ss << "\nMesh render time (ms): " << D3D12Profiler::GetDuration(0, 1);
+		ImGui::Text(ss.str().c_str());
+		D3D12Profiler::UnmapData();
+		D3D12Profiler::UnmapDataCompute();
+	}
+	ImGui::End();
 }
 
 void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
@@ -88,9 +112,9 @@ void Scene::Draw(ID3D12GraphicsCommandList * pCommandList)
 		runOnce = false;
 	}
 
-	m_mcs.FillVertexBuffers(m_ds.GetVolumes(), m_async);
+	m_mcs.FillVertexBuffers(m_ds.GetVolumes(), m_async, m_profile);
 
 	m_camera.Draw(pCommandList);
 	m_rs.Apply(pCommandList);
-	m_mcs.PrepareForRendering(pCommandList, m_async);
+	m_mcs.PrepareForRendering(pCommandList, m_async, m_profile);
 }

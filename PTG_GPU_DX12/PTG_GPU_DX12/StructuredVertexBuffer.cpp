@@ -106,7 +106,7 @@ void StructuredVertexBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsC
 		pCmdList->SetGraphicsRootDescriptorTable(rootParameterIndex, uavHeapHandle);
 }
 
-void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList)
+void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList, bool doTimestamp)
 {
 	UINT* counterValue = nullptr;
 	D3D12_RANGE rr = { 0,sizeof(UINT) };
@@ -126,7 +126,16 @@ void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList)
 	pCmdList->IASetVertexBuffers(0, 1, &m_vbv);
 
 	m_triangleCount = (*counterValue) * 3;
-	pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
+	if (!doTimestamp)
+		pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
+	else
+	{
+		D3D12Profiler::Begin();
+		D3D12Profiler::Timestamp(0);
+		pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
+		D3D12Profiler::Timestamp(1);
+		D3D12Profiler::End();
+	}
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0);
 }

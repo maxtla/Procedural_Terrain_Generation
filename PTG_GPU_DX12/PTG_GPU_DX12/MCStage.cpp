@@ -38,13 +38,11 @@ void MCStage::Init()
 	}
 }
 
-void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool async)
+void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool async, bool doTimestamp)
 {
 	static bool wasTurnedOff = false;
 	static bool previousState = false;
 
-	if (previousState && !async)
-		wasTurnedOff = true;
 
 	auto cmdQ = gRenderer.GetComputeCmdQueue();
 	auto cmdAllo = gRenderer.GetComputeAllocator();
@@ -52,13 +50,9 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool asyn
 	auto rs = gRenderer.GetRootSignature();
 	auto heap = gRenderer.GetDescriptorHeap();
 
-	if (async || wasTurnedOff)
+	if (async || (previousState && !async))
 	{
 		gRenderer.WaitForGPUCompletion(cmdQ, m_fence); //Previous resource were use for rendering last frame, this frame the current resources need to finish
-		if (wasTurnedOff)
-			m_index = 0;
-		else
-			m_index = (m_index + 1) % 2;
 	}
 
 	previousState = async;
@@ -74,7 +68,16 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool asyn
 
 	m_rs.Apply(cmdList);
 
-	m_chunks[m_index].GenerateVertices(&volumes[0]);
+	if (async)
+	{
+		m_index = (m_index + 1) % 2;
+		m_chunks[m_index].GenerateVertices(&volumes[0], doTimestamp);
+	}
+	else
+	{
+		m_chunks[m_index].GenerateVertices(&volumes[0], doTimestamp);
+		m_index = (m_index + 1) % 2;
+	}
 
 	cmdList->Close();
 
@@ -83,12 +86,9 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool asyn
 		gRenderer.WaitForGPUCompletion(cmdQ, m_fence); //Resources need to finish before rendering
 }
 
-void MCStage::PrepareForRendering(ID3D12GraphicsCommandList * pCmdList, bool async)
+void MCStage::PrepareForRendering(ID3D12GraphicsCommandList * pCmdList, bool async, bool doTimestamp)
 {
-	if (async)
-		m_chunks[(m_index + 1) % 2].Render(pCmdList); //Use the previous finished resource for this frame for rendering
-	else
-		m_chunks[m_index].Render(pCmdList);
+	m_chunks[(m_index + 1) % 2].Render(pCmdList, doTimestamp);
 }
 
 void MCStage::Update(float & dt)

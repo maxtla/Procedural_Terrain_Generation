@@ -31,6 +31,7 @@
 //Own classes that rarely change
 #include "ShaderReader.h"
 #include "Renderer.h"
+#include "D3D12Profiler.h"
 
 //Application
 struct CameraSettings

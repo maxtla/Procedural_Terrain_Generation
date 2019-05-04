@@ -9,7 +9,7 @@ public:
 	void Release();
 
 	void BindBuffer(UINT rootParameterIndex, ID3D12GraphicsCommandList * pCmdList, bool compute = false);
-	void BindAndDraw(ID3D12GraphicsCommandList * pCmdList);
+	void BindAndDraw(ID3D12GraphicsCommandList * pCmdList, bool doTimestamp);
 
 	UINT GetTriangleCount() { return m_triangleCount; }
 private:

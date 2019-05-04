@@ -21,5 +21,6 @@ private:
 	DensityStage m_ds;
 	MCStage m_mcs;
 	bool m_async = false;
+	bool m_profile = false;
 };
 

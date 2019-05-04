@@ -98,6 +98,8 @@ namespace D3D12
 			this->m_scissorRect.right = (long)this->m_viewPort.Width;
 			this->m_scissorRect.bottom = (long)this->m_viewPort.Height;
 		}
+		
+		//m_device->SetStablePowerState(true);
 
 		return hr;
 	}

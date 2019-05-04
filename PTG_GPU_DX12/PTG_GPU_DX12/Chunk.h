@@ -11,10 +11,11 @@ public:
 
 	void CreateConstantBuffer();
 	void CreateSVB();
+	void SetQueryBeginEndIndex(UINT begin, UINT end) { queryBeginEndIndex[0] = begin; queryBeginEndIndex[1] = end; }
 	void Release();
-
-	void GenerateVertices(TextureBuffer3D * pDensityTexture);
-	void Render(ID3D12GraphicsCommandList * pCmdList);
+	
+	void GenerateVertices(TextureBuffer3D * pDensityTexture, bool doTimestamp);
+	void Render(ID3D12GraphicsCommandList * pCmdList, bool doTimestamp);
 
 	std::string GetChunkInfoStr();
 private:
@@ -29,5 +30,7 @@ private:
 
 	ConstantBuffer m_cb;
 	StructuredVertexBuffer m_svb;
+
+	UINT queryBeginEndIndex[2];
 };
 

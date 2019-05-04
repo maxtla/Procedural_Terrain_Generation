@@ -9,9 +9,9 @@ public:
 	~MCStage();
 
 	void Init();
-	void FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool async);
+	void FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool async, bool doTimestamp);
 
-	void PrepareForRendering(ID3D12GraphicsCommandList * pCmdList, bool async);
+	void PrepareForRendering(ID3D12GraphicsCommandList * pCmdList, bool async, bool doTimestamp);
 	void Update(float& dt);
 private:
 	RenderState m_rs;

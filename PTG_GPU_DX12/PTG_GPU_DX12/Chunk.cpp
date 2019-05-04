@@ -37,7 +37,8 @@ void Chunk::Release()
 	m_svb.Release();
 }
 
-void Chunk::GenerateVertices(TextureBuffer3D * pDensityTexture)
+
+void Chunk::GenerateVertices(TextureBuffer3D * pDensityTexture, bool doTimestamp)
 {
 	auto cmdList = gRenderer.GetComputeCmdList();
 
@@ -46,19 +47,28 @@ void Chunk::GenerateVertices(TextureBuffer3D * pDensityTexture)
 	m_svb.BindBuffer(2, cmdList, true);
 	pDensityTexture->BindSRV(3, cmdList);
 
-	cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
+	if (!doTimestamp)
+		cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
+	else
+	{
+		D3D12Profiler::BeginCompute();
+		D3D12Profiler::TimestampCompute(0);
+		cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
+		D3D12Profiler::TimestampCompute(1);
+		D3D12Profiler::EndCompute();
+	}
 }
 
-void Chunk::Render(ID3D12GraphicsCommandList * pCmdList)
+void Chunk::Render(ID3D12GraphicsCommandList * pCmdList, bool doTimestamp)
 {
-	m_svb.BindAndDraw(pCmdList);
+	m_svb.BindAndDraw(pCmdList, doTimestamp);
 }
 
 std::string Chunk::GetChunkInfoStr()
 {
 	std::stringstream ss;
 
-	UINT cells = pow(((CHUNK_THREAD_GROUPS* NUM_THREADS_PER_GROUP) - 1U), 3);
+	UINT cells = (UINT)pow(((CHUNK_THREAD_GROUPS* NUM_THREADS_PER_GROUP) - 1U), 3);
 
 	ss << "Cells: " << cells << "\n";
 	ss << "Chunk Scaling XYZ: " << m_cbData.m_dimension.x << " ; " << m_cbData.m_dimension.y << " ; " << m_cbData.m_dimension.z << "\n";
