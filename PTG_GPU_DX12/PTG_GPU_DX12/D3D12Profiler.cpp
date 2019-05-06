@@ -27,6 +27,7 @@ UINT64 D3D12Profiler::m_gpuFrequencyCompute = 0U;
 UINT64 * D3D12Profiler::m_queryDataCompute = nullptr;
 UINT D3D12Profiler::m_countCompute = 0U;
 
+
 D3D12Profiler::D3D12Profiler()
 {
 }
@@ -70,7 +71,7 @@ bool D3D12Profiler::Init(UINT count, UINT countCompute)
 
 	gRenderer.GetDevice()->CreateCommittedResource(
 		&heapProp,
-		D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		NULL,
@@ -85,7 +86,7 @@ bool D3D12Profiler::Init(UINT count, UINT countCompute)
 
 	gRenderer.GetDevice()->CreateCommittedResource(
 		&heapProp,
-		D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		NULL,
@@ -101,6 +102,9 @@ bool D3D12Profiler::Init(UINT count, UINT countCompute)
 		m_queryBufferCompute->SetName(L"QueryHeapBufferCompute");
 
 		m_initialized = true;
+
+		m_count = count;
+		m_countCompute = countCompute;
 	}
 	return m_initialized;
 }
@@ -141,7 +145,7 @@ void D3D12Profiler::BeginCompute()
 	{
 		m_hasBegunCompute = true;
 		m_hasEndedCompute = false;
-		gRenderer.GetCommandQueue()->GetTimestampFrequency(&m_gpuFrequency);
+		gRenderer.GetComputeCmdQueue()->GetTimestampFrequency(&m_gpuFrequency);
 	}
 }
 
@@ -173,9 +177,10 @@ void D3D12Profiler::MapData()
 
 void D3D12Profiler::UnmapData()
 {
+	D3D12_RANGE wr = { 0, 0 };
 	if (m_hasAquiredData)
 	{
-		m_queryBuffer->Unmap(0, NULL);
+		m_queryBuffer->Unmap(0, &wr);
 		m_hasAquiredData = false;
 	}
 }
@@ -211,9 +216,10 @@ void D3D12Profiler::MapDataCompute()
 
 void D3D12Profiler::UnmapDataCompute()
 {
+	D3D12_RANGE wr = { 0, 0};
 	if (m_hasAquiredDataCompute)
 	{
-		m_queryBufferCompute->Unmap(0, NULL);
+		m_queryBufferCompute->Unmap(0, &wr);
 		m_hasAquiredDataCompute = false;
 	}
 }
@@ -223,8 +229,8 @@ double D3D12Profiler::GetDurationCompute(UINT beginTS, UINT endTS)
 	if (m_hasAquiredDataCompute)
 	{
 		UINT64 begin, end;
-		begin = m_queryData[beginTS];
-		end = m_queryData[endTS];
+		begin = m_queryDataCompute[beginTS];
+		end = m_queryDataCompute[endTS];
 
 		double duration = (double)(((float)(end - begin)) / float(m_gpuFrequencyCompute) * 1000.f);
 		return duration;

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Renderer.h"
 
-UINT CHUNK_THREAD_GROUPS = DENSITY_THREAD_GROUPS;
+UINT CHUNK_THREAD_GROUPS = 1U;
 
 namespace D3D12
 {

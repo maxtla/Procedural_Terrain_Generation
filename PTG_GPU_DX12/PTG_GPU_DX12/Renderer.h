@@ -15,7 +15,7 @@ const UINT HEAP_MAX_SRV = 16U;
 const UINT HEAP_DESCRIPTOR_COUNT = HEAP_MAX_CONSTANT_BUFFERS + HEAP_MAX_UAV + HEAP_MAX_SRV;
 
 const UINT VERTEX_BYTE_STRIDE = sizeof(float) * 6;
-const UINT DENSITY_THREAD_GROUPS = 8U; //22 Thread groups * 10 is the absolute maximum because of the vertex buffer
+const UINT DENSITY_THREAD_GROUPS =8U; //22 Thread groups * 10 is the absolute maximum because of the vertex buffer
 //UINT CHUNK_THREAD_GROUPS;
 const UINT NUM_THREADS_PER_GROUP = 8U;
 const UINT DENSITY_VALUES = (UINT)pow((DENSITY_THREAD_GROUPS* NUM_THREADS_PER_GROUP)-1, 3);
@@ -65,6 +65,8 @@ namespace D3D12
 		ID3D12Device * GetDevice() { return m_device; }
 		ID3D12GraphicsCommandList * GetCommandList() { return m_gCmdList; }
 		ID3D12CommandQueue * GetCommandQueue() { return m_directQ; }
+		ID3D12CommandAllocator * GetDirectAllocator() { return m_directAllocator; }
+
 		ID3D12RootSignature * GetRootSignature() { return m_rootSignature; }
 		ID3D12DescriptorHeap * GetDescriptorHeap() { return m_DescHeap; }
 

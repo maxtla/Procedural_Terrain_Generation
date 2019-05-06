@@ -20,6 +20,7 @@ public:
 	static void MapDataCompute();
 	static void UnmapDataCompute();
 	static double GetDurationCompute(UINT beginTS, UINT endTS);
+
 private:
 	D3D12Profiler();
 	~D3D12Profiler();
