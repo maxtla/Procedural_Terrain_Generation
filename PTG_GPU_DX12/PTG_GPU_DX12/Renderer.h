@@ -15,7 +15,7 @@ const UINT HEAP_MAX_SRV = 16U;
 const UINT HEAP_DESCRIPTOR_COUNT = HEAP_MAX_CONSTANT_BUFFERS + HEAP_MAX_UAV + HEAP_MAX_SRV;
 
 const UINT VERTEX_BYTE_STRIDE = sizeof(float) * 6;
-const UINT DENSITY_THREAD_GROUPS =8U; //22 Thread groups * 10 is the absolute maximum because of the vertex buffer
+const UINT DENSITY_THREAD_GROUPS =12U; //22 Thread groups * 10 is the absolute maximum because of the vertex buffer
 //UINT CHUNK_THREAD_GROUPS;
 const UINT NUM_THREADS_PER_GROUP = 8U;
 const UINT DENSITY_VALUES = (UINT)pow((DENSITY_THREAD_GROUPS* NUM_THREADS_PER_GROUP)-1, 3);

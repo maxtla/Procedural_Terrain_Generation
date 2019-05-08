@@ -74,7 +74,8 @@ std::string Chunk::GetChunkInfoStr()
 	ss << "Chunk Scaling XYZ: " << m_cbData.m_dimension.x << " ; " << m_cbData.m_dimension.y << " ; " << m_cbData.m_dimension.z << "\n";
 	ss << "Chunk origin XYZ: " << m_cbData.m_worldPos.x << " ; " << m_cbData.m_worldPos.y << " ; " << m_cbData.m_worldPos.z << "\n";
 	ss << "Cell spacing: " << m_cbData.m_invVoxelDim << "\n";
-	ss << "Generated Triangles: " << m_svb.GetTriangleCount() << "\n";
+	ss << "Generated Vertices: " << m_svb.GetVertexCount() << "\n";
+	ss << "Generated Triangles: " << (m_svb.GetVertexCount() / 3) << "\n";
 
 	return ss.str();
 }

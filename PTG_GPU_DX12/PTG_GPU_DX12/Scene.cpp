@@ -57,7 +57,9 @@ void Scene::Update(float& dt)
 	{
 		keyReleased = false;
 		if (SDL_GetRelativeMouseMode())
+		{
 			SDL_SetRelativeMouseMode((SDL_bool)false);
+		}
 		else
 		{
 			SDL_SetRelativeMouseMode((SDL_bool)true);

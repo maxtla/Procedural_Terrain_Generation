@@ -108,14 +108,14 @@ void StructuredVertexBuffer::BindBuffer(UINT rootParameterIndex, ID3D12GraphicsC
 
 void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList, bool doTimestamp)
 {
-	UINT* counterValue = nullptr;
+	UINT* triangleCount = nullptr;
 	D3D12_RANGE rr = { 0,sizeof(UINT) };
-	m_counter->Map(0, &rr, reinterpret_cast<void**>(&counterValue));
+	m_counter->Map(0, &rr, reinterpret_cast<void**>(&triangleCount));
 	rr.End = 0;
 	m_counter->Unmap(0, &rr);
 
 	m_vbv.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
-	m_vbv.SizeInBytes = (*counterValue) * 72;
+	m_vbv.SizeInBytes = (*triangleCount) * 72;
 	m_vbv.StrideInBytes = VERTEX_BYTE_STRIDE;
 
 
@@ -125,14 +125,14 @@ void StructuredVertexBuffer::BindAndDraw(ID3D12GraphicsCommandList * pCmdList, b
 
 	pCmdList->IASetVertexBuffers(0, 1, &m_vbv);
 
-	m_triangleCount = (*counterValue) * 3;
+	m_vertexCount = (*triangleCount) * 3;
 	if (!doTimestamp)
-		pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
+		pCmdList->DrawInstanced(m_vertexCount, 1, 0, 0);
 	else
 	{
 		D3D12Profiler::Begin();
 		D3D12Profiler::Timestamp(0);
-		pCmdList->DrawInstanced(m_triangleCount, 1, 0, 0);
+		pCmdList->DrawInstanced(m_vertexCount, 1, 0, 0);
 		D3D12Profiler::Timestamp(1);
 		D3D12Profiler::End();
 	}

@@ -1,21 +1,8 @@
-﻿  pch.cpp
-  Camera.cpp
-  Chunk.cpp
-  ConstantBuffer.cpp
-  D3D12Profiler.cpp
-  DensityStage.cpp
-  MCStage.cpp
-  PTG_GPU_DX12.cpp
-  RenderState.cpp
-  Renderer.cpp
-  Scene.cpp
-  ShaderReader.cpp
-  StructuredVertexBuffer.cpp
-  TextureBuffer3D.cpp
+﻿  Renderer.cpp
   Generating code
-  12 of 1722 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    11 functions had inline decision re-evaluated but remain unchanged
+  4 of 1721 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Release\PTG_GPU_DX12.exe
           1 file(s) copied.
