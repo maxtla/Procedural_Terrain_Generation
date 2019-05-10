@@ -3,7 +3,10 @@
 
 extern std::vector<Shader> gShaderCollection;
 extern D3D12::Renderer gRenderer;
-extern UINT CHUNK_THREAD_GROUPS;
+
+extern UINT CHUNK_THREAD_GROUPS_X;
+extern UINT CHUNK_THREAD_GROUPS_Y;
+extern UINT CHUNK_THREAD_GROUPS_Z;
 
 MCStage::MCStage()
 {
@@ -26,8 +29,8 @@ void MCStage::Init()
 	m_rs.AddShader(CS, gShaderCollection[5]);
 	m_rs.CreatePipelineState(gRenderer.GetRootSignature(), m_rs.GetDefaultStateDescription(), true);
 
-	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, {0.5f, 0.25f, 0.5f}, 2)); //Pos, Dimension (is scaling of the chunk), Cells
-	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, { 0.5f, 0.25f, 0.5f }, 2));
+	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, {1.f, 1.f, 1.f}, 24)); //Pos, Dimension (is scaling of the chunk), Cells
+	m_chunks.push_back(Chunk({ 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }, 24));
 
 	m_fence = gRenderer.MakeFence(0, 1, D3D12_FENCE_FLAG_NONE, L"MC_Fence");
 
@@ -60,11 +63,11 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool asyn
 	cmdAllo->Reset();
 	cmdList->Reset(cmdAllo, NULL);
 
-	UINT values[2] = { CHUNK_THREAD_GROUPS , NUM_THREADS_PER_GROUP };
+	UINT values[4] = { CHUNK_THREAD_GROUPS_X, CHUNK_THREAD_GROUPS_Y, CHUNK_THREAD_GROUPS_Z, NUM_THREADS_PER_GROUP };
 	//Prepare pipeline
 	cmdList->SetComputeRootSignature(rs);
 	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)&heap);
-	cmdList->SetComputeRoot32BitConstants(4, 2, (const void*)values, 0);
+	cmdList->SetComputeRoot32BitConstants(4, 4, (const void*)values, 0);
 
 	m_rs.Apply(cmdList);
 
@@ -96,6 +99,8 @@ void MCStage::Update(float & dt)
 	ImGui::Begin("Chunk Data");
 	ImGui::Text(m_chunks[m_index].GetChunkInfoStr().c_str());
 	ImGui::Text("\nChunk ThreadGroups");
-	ImGui::SliderInt("", (int*)&CHUNK_THREAD_GROUPS, 1, DENSITY_THREAD_GROUPS);
+	ImGui::SliderInt(" X", (int*)&CHUNK_THREAD_GROUPS_X, 1, DENSITY_THREAD_GROUPS_X);
+	ImGui::SliderInt(" Y", (int*)&CHUNK_THREAD_GROUPS_Y, 1, DENSITY_THREAD_GROUPS_Y);
+	ImGui::SliderInt(" Z", (int*)&CHUNK_THREAD_GROUPS_Z, 1, DENSITY_THREAD_GROUPS_Z);
 	ImGui::End();
 }

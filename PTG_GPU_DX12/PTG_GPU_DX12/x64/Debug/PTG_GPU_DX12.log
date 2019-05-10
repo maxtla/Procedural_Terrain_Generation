@@ -1,17 +1,3 @@
-﻿  pch.cpp
-  Camera.cpp
-  Chunk.cpp
-  ConstantBuffer.cpp
-  D3D12Profiler.cpp
-  DensityStage.cpp
-  MCStage.cpp
-  PTG_GPU_DX12.cpp
-  RenderState.cpp
-  Renderer.cpp
-  Scene.cpp
-  ShaderReader.cpp
-  StructuredVertexBuffer.cpp
-  TextureBuffer3D.cpp
-  Generating Code...
+﻿  MCStage.cpp
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Debug\PTG_GPU_DX12.exe
           1 file(s) copied.

@@ -2,7 +2,10 @@
 #include "Chunk.h"
 
 extern D3D12::Renderer gRenderer;
-extern UINT CHUNK_THREAD_GROUPS;
+
+extern UINT CHUNK_THREAD_GROUPS_X;
+extern UINT CHUNK_THREAD_GROUPS_Y;
+extern UINT CHUNK_THREAD_GROUPS_Z;
 
 Chunk::Chunk(DirectX::XMFLOAT3 worldPos, DirectX::XMFLOAT3 dimension, UINT voxels)
 {
@@ -48,12 +51,12 @@ void Chunk::GenerateVertices(TextureBuffer3D * pDensityTexture, bool doTimestamp
 	pDensityTexture->BindSRV(3, cmdList);
 
 	if (!doTimestamp)
-		cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
+		cmdList->Dispatch(CHUNK_THREAD_GROUPS_X, CHUNK_THREAD_GROUPS_Y, CHUNK_THREAD_GROUPS_Z);
 	else
 	{
 		D3D12Profiler::BeginCompute();
 		D3D12Profiler::TimestampCompute(0);
-		cmdList->Dispatch(CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS, CHUNK_THREAD_GROUPS);
+		cmdList->Dispatch(CHUNK_THREAD_GROUPS_X, CHUNK_THREAD_GROUPS_Y, CHUNK_THREAD_GROUPS_Z);
 		D3D12Profiler::TimestampCompute(1);
 		D3D12Profiler::EndCompute();
 	}
@@ -68,7 +71,7 @@ std::string Chunk::GetChunkInfoStr()
 {
 	std::stringstream ss;
 
-	UINT cells = (UINT)pow(((CHUNK_THREAD_GROUPS* NUM_THREADS_PER_GROUP) - 1U), 3);
+	UINT cells = (DENSITY_THREAD_GROUPS_X - 1)*NUM_THREADS_PER_GROUP * (DENSITY_THREAD_GROUPS_Y - 1)*NUM_THREADS_PER_GROUP*(DENSITY_THREAD_GROUPS_Z - 1)*NUM_THREADS_PER_GROUP;
 
 	ss << "Cells: " << cells << "\n";
 	ss << "Chunk Scaling XYZ: " << m_cbData.m_dimension.x << " ; " << m_cbData.m_dimension.y << " ; " << m_cbData.m_dimension.z << "\n";

@@ -20,7 +20,9 @@ SamplerState LinearClamp : register(s0);
 
 cbuffer PerDispatchData : register(b2)
 {
-	uint ThreadGroups;
+	uint ThreadGroups_X;
+	uint ThreadGroups_Y;
+	uint ThreadGroups_Z;
 	uint NumThreadsPerGroup;
 };
 
@@ -41,7 +43,7 @@ float3 localToWorldCoord(float3 localPos)
 float3 CalculateVertex(float3 p1, float3 p2, float d1, float d2, float isoValue)
 {
 	float3 dir = (p2 - p1);
-	float s = (isoValue-d1) / (d2 - d1);
+	float s = (isoValue - d1) / (d2 - d1);
 	return p1 + s * dir; 
 }
 
@@ -71,32 +73,34 @@ float3 CalculateNormal(float3 uvw)
 [numthreads(8,8,8)]
 void main(uint3 id : SV_DispatchThreadID)
 {
-	uint border = ThreadGroups* NumThreadsPerGroup;
-	if (id.x >= border || id.y >= border || id.z >= border)
+	uint border_X = ThreadGroups_X * NumThreadsPerGroup;
+	uint border_Y = ThreadGroups_Y * NumThreadsPerGroup;
+	uint border_Z = ThreadGroups_Z * NumThreadsPerGroup;
+	if (id.x >= border_X || id.y >= border_Y || id.z >= border_Z)
 		return;
 
 	float cellDensity[8];	// density values at each corner of the voxel/cell (local to each thread)
 	float3 localCoords[8]; // local coordinates for each corner within the chunk (local to each thread)
 
 	float3 corners[8];
-	corners[0] = float3(id);									//top left front
-	corners[1] = corners[0] + float3(1, 0, 0);		//top right front
-	corners[2] = corners[0] + float3(0, 1, 0);		//bottom left front
-	corners[3] = corners[0] + float3(1, 1, 0);		//bottom right front
+	corners[0] = float3(id);									//bottom left front
+	corners[1] = corners[0] + float3(0, 1, 0);		//top left front
+	corners[2] = corners[0] + float3(1, 1, 0);		//top right front
+	corners[3] = corners[0] + float3(1, 0, 0);		//bottom right front
 
-	corners[4] = corners[0] + float3(0, 0, 1);		//top left back
-	corners[5] = corners[0] + float3(1, 0, 1);		//top right back
-	corners[6] = corners[0] + float3(0, 1, 1);		//bottom left back
-	corners[7] = corners[0] + float3(1, 1, 1);		//bottom right back
+	corners[4] = corners[0] + float3(0, 0, 1);		//bottom left back
+	corners[5] = corners[0] + float3(0, 1, 1);		//top left back
+	corners[6] = corners[0] + float3(1, 1, 1);		//top right back
+	corners[7] = corners[0] + float3(1, 0, 1);		//bottom right back
 
-	float isoLevel = 0.0f;
+	float isoLevel = 0.f;
 	int caseNumber = 0;
 	for (int i = 0; i < 8; i++)
 	{
 		localCoords[i] = corners[i] * invVoxelDim;
 		int3 index = int3(corners[i]);
 		cellDensity[i] = densityTexture.Load(int4(index, 0)).r;
-		if (cellDensity[i] <= isoLevel) caseNumber |= 1 << i;
+		if (cellDensity[i] < isoLevel) caseNumber |= 1 << i;
 	}
 
 	int numPolys = 0;
@@ -125,6 +129,9 @@ void main(uint3 id : SV_DispatchThreadID)
 			vert.pos = localToWorldCoord(pLocal);
 			t.vertices[e] = vert;
 		}
+		//Vertex temp = t.vertices[0];
+		//t.vertices[0] = t.vertices[2];
+		//t.vertices[2] = temp;
 		CalculateNormals(t);
 		vertexBuffer[vertexBuffer.IncrementCounter()] = t;
 	}

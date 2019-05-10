@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "Renderer.h"
 
-UINT CHUNK_THREAD_GROUPS = 1U;
+UINT CHUNK_THREAD_GROUPS_X = 1U;
+UINT CHUNK_THREAD_GROUPS_Y = 1U;
+UINT CHUNK_THREAD_GROUPS_Z = 1U;
 
 namespace D3D12
 {
@@ -425,7 +427,7 @@ namespace D3D12
 		rootConstants[0].RegisterSpace = 0;
 		rootConstants[0].ShaderRegister = 0; //b0
 
-		rootConstants[1].Num32BitValues = 2; //ThreadGroups and NumofThreadsperGroup
+		rootConstants[1].Num32BitValues = 4; //ThreadGroups and NumofThreadsperGroup
 		rootConstants[1].RegisterSpace = 0;
 		rootConstants[1].ShaderRegister = 2; //b2
 

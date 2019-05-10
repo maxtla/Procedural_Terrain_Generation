@@ -44,19 +44,19 @@ void DensityStage::Dispatch()
 	auto rs = gRenderer.GetRootSignature();
 	auto uavHeap = gRenderer.GetDescriptorHeap();
 
-	UINT values[2] = { DENSITY_THREAD_GROUPS , NUM_THREADS_PER_GROUP };
+	UINT values[4] = { DENSITY_THREAD_GROUPS_X, DENSITY_THREAD_GROUPS_Y, DENSITY_THREAD_GROUPS_Z, NUM_THREADS_PER_GROUP };
 
 	cmdAllo->Reset();
 	cmdList->Reset(cmdAllo, NULL);
 	//Prepare pipeline
 	cmdList->SetComputeRootSignature(rs);
-	cmdList->SetComputeRoot32BitConstants(4, 2, (const void*)values, 0);
+	cmdList->SetComputeRoot32BitConstants(4, 4, (const void*)values, 0);
 	m_rs.Apply(cmdList);
 	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)&uavHeap);
 	for (auto & v : m_volumes)
 	{
 		v.BindUAV(2, cmdList);
-		cmdList->Dispatch(DENSITY_THREAD_GROUPS, DENSITY_THREAD_GROUPS, DENSITY_THREAD_GROUPS);
+		cmdList->Dispatch(DENSITY_THREAD_GROUPS_X, DENSITY_THREAD_GROUPS_Y, DENSITY_THREAD_GROUPS_Z);
 	}
 
 	cmdList->Close();
