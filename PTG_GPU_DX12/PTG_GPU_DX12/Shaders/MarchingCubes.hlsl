@@ -39,12 +39,33 @@ float3 localToWorldCoord(float3 localPos)
 	return wsChunkPosLL + (localPos * wsChunkDim);
 }
 
+float3 CalculateNormal(uint3 index) 
+{
+	float3 gradient;
+	gradient.x = densityTexture.Load(float4(float3(index.x + 1, index.y, index.z), 0)) -
+		densityTexture.Load(float4(float3(index.x - 1, index.y, index.z), 0));
+	gradient.y = densityTexture.Load(float4(float3(index.x, index.y + 1, index.z), 0)) -
+		densityTexture.Load(float4(float3(index.x, index.y - 1, index.z), 0));
+	gradient.z = densityTexture.Load(float4(float3(index.x, index.y, index.z + 1), 0)) -
+		densityTexture.Load(float4(float3(index.x, index.y, index.z - 1), 0));
+	return normalize(gradient);
+}
 // This function interpolates a vertex position between p1 and p2 with density values d1 and d2 respectivly
-float3 CalculateVertex(float3 p1, float3 p2, float d1, float d2, float isoValue)
+Vertex CalculateVertex(float3 p1, float3 p2, float d1, float d2, float isoValue)
 {
 	float3 dir = (p2 - p1);
 	float s = (isoValue - d1) / (d2 - d1);
-	return p1 + s * dir; 
+	float3 pos = p1 + s * dir; 
+
+	float3 nor1 = CalculateNormal(uint3(p1));
+	float3 nor2 = CalculateNormal(uint3(p2));
+	float3 nor = nor1 + s * (nor2 - nor1); //interpolate the normal to match the interpolated position
+
+	Vertex v;
+	v.pos = pos;
+	v.nor = normalize(nor);
+
+	return v;
 }
 
 void CalculateNormals(inout Triangle t)
@@ -58,17 +79,6 @@ void CalculateNormals(inout Triangle t)
 	t.vertices[2].nor = normal;
 }
 
-float3 CalculateNormal(float3 uvw)
-{
-	float d;
-	d = invVoxelDim;
-	float3 gradient;
-	gradient.x = densityTexture.SampleLevel(LinearClamp, uvw + float3(d, 0, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(-d, 0, 0), 0).x;
-	gradient.y = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, d, 0), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, -d, 0), 0).x;
-	gradient.z = densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, d), 0).x - densityTexture.SampleLevel(LinearClamp, uvw + float3(0, 0, -d), 0).x;
-
-	return -normalize(gradient);
-}
 //largest possible product is 10*10*10 = 1000 since max threads per group is 1024 for shader model 5.0
 [numthreads(8,8,8)]
 void main(uint3 id : SV_DispatchThreadID)
@@ -97,10 +107,10 @@ void main(uint3 id : SV_DispatchThreadID)
 	int caseNumber = 0;
 	for (int i = 0; i < 8; i++)
 	{
-		localCoords[i] = corners[i] * invVoxelDim;
+		localCoords[i] = corners[i];
 		int3 index = int3(corners[i]);
 		cellDensity[i] = densityTexture.Load(int4(index, 0)).r;
-		if (cellDensity[i] < isoLevel) caseNumber |= 1 << i;
+		if (cellDensity[i] <= isoLevel) caseNumber |= 1 << i;
 	}
 
 	int numPolys = 0;
@@ -123,16 +133,15 @@ void main(uint3 id : SV_DispatchThreadID)
 			float3 p2Local = localCoords[v2];
 
 			// linearly interpolate vertex between p1 and p2
-			float3 pLocal = CalculateVertex(p1Local, p2Local, cellDensity[v1], cellDensity[v2], isoLevel);
+			Vertex pLocal = CalculateVertex(p1Local, p2Local, cellDensity[v1], cellDensity[v2], isoLevel);
 			// convert from local to world coordinates
-			Vertex vert;
+	/*		Vertex vert;
 			vert.pos = localToWorldCoord(pLocal);
-			t.vertices[e] = vert;
+			vert.nor = CalculateNormal(uint3(p1Local));*/
+			t.vertices[e] = pLocal;
 		}
-		//Vertex temp = t.vertices[0];
-		//t.vertices[0] = t.vertices[2];
-		//t.vertices[2] = temp;
-		CalculateNormals(t);
+
+		//CalculateNormals(t);
 		vertexBuffer[vertexBuffer.IncrementCounter()] = t;
 	}
 }

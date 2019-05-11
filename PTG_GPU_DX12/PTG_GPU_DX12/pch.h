@@ -36,9 +36,9 @@
 //Application
 struct CameraSettings
 {
-	float x = 0.f;
-	float y = 2.f;
-	float z = -1.f;
+	float x = 0.25f;
+	float y = 0.25f;
+	float z = 0.35f;
 
 	float fov = DirectX::XM_PIDIV4; //standard fov
 	float aspectRatio = 1.0f; // W / H = 800U / 800U = 1U 

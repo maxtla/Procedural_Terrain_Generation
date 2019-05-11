@@ -169,19 +169,20 @@ static const float PI = 3.14159265f;
 void main( uint3 id : SV_DispatchThreadID )
 {
 	//Simplex noise cube
-	//densityBuffer[id] = snoise(float3(id));
-
-	//Simplex noise terrain
+	densityBuffer[id] = snoise(float3(id));
+	return;
+	//Simplex noise Cave with no entrance
 	float d = 0.f;
-	if (id.y == 0)
+	if (id.y == 0 || id.y == 9 || id.x == 0 || id.x == (ThreadGroups_X * NumThreadsPerGroup - 1) || id.z == 0 || id.z == (ThreadGroups_Z * NumThreadsPerGroup - 1))
 	{
 		d = -1.0f;
 		densityBuffer[id] = d;
 	}
-	else if (id.y >= 1 && id.y < 5)
+	else if (id.y >= 1 && id.y < 9)
 	{
 		d = -1.0f;
 		d = d * snoise(float3(id));
+		d += cos(id.x) + sin(id.y) + cos(id.z);
 		densityBuffer[id] = d * 0.5f;
 	}
 	else

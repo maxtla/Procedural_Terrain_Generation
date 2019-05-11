@@ -1,3 +1,22 @@
-﻿  MCStage.cpp
+﻿  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\x64Debug\Shaders\DensityVolume.cso
+C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\PTG_GPU_DX12\Shaders\MarchingCubes.hlsl(141,4-16): warning X3550: array reference cannot be used as an l-value; not natively addressable, forcing loop to unroll
+FXC : warning X4714: sum of temp registers and indexable temp registers times 512 threads exceeds the recommended total 16384.  Performance may be reduced
+  
+  compilation object save succeeded; see C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\bin\x64Debug\Shaders\MarchingCubes.cso
+  pch.cpp
+  Camera.cpp
+  Chunk.cpp
+  ConstantBuffer.cpp
+  D3D12Profiler.cpp
+  DensityStage.cpp
+  MCStage.cpp
+  PTG_GPU_DX12.cpp
+  RenderState.cpp
+  Renderer.cpp
+  Scene.cpp
+  ShaderReader.cpp
+  StructuredVertexBuffer.cpp
+  TextureBuffer3D.cpp
+  Generating Code...
   PTG_GPU_DX12.vcxproj -> C:\Users\mtlat\Documents\Kandidaten\Project\PTG\PTG_GPU_DX12\\bin\x64Debug\PTG_GPU_DX12.exe
           1 file(s) copied.

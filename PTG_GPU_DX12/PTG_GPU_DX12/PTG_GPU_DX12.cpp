@@ -160,6 +160,12 @@ void HandleEvent(SDL_Event & e)
 			gAppCtx.my = e.motion.y;
 		}
 		break;
+	case SDL_MOUSEWHEEL:
+		if (e.wheel.y > 0)
+			gAppCtx.camSettings.moveSpeed += 0.0005f;
+		else if (e.wheel.y < 0)
+			gAppCtx.camSettings.moveSpeed -= 0.0005f;
+		break;
 	default:
 		break;
 	}

@@ -23,7 +23,7 @@ void Camera::Update(float& dt)
 	int numKeys;
 	const Uint8 * keyStates = SDL_GetKeyboardState(&numKeys);
 
-	float speed = m_ms * dt;
+	float speed = gAppCtx.camSettings.moveSpeed * dt;
 
 	//Movement
 	if (keyStates[SDL_SCANCODE_A])
