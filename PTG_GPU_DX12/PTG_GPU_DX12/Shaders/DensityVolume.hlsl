@@ -169,22 +169,61 @@ static const float PI = 3.14159265f;
 void main( uint3 id : SV_DispatchThreadID )
 {
 	//Simplex noise cube
-	densityBuffer[id] = snoise(float3(id));
-	return;
-	//Simplex noise Cave with no entrance
-	float d = 0.f;
-	if (id.y == 0 || id.y == 9 || id.x == 0 || id.x == (ThreadGroups_X * NumThreadsPerGroup - 1) || id.z == 0 || id.z == (ThreadGroups_Z * NumThreadsPerGroup - 1))
-	{
-		d = -1.0f;
-		densityBuffer[id] = d;
-	}
-	else if (id.y >= 1 && id.y < 9)
-	{
-		d = -1.0f;
-		d = d * snoise(float3(id));
-		d += cos(id.x) + sin(id.y) + cos(id.z);
-		densityBuffer[id] = d * 0.5f;
-	}
+	//densityBuffer[id] = snoise(float3(id));
+	//return;
+
+	////Simplex noise Cave with no entrance
+	//float d = -1.0f;
+	//if (id.y == 0 || id.y == 9 || id.x == 0 || id.x == (ThreadGroups_X * NumThreadsPerGroup - 1) || id.z == 0 || id.z == (ThreadGroups_Z * NumThreadsPerGroup - 1))
+	//{
+	//	if (id.y < 10)
+	//		d = 1.0f;
+	//	densityBuffer[id] = d;
+	//}
+	//else if (id.y >= 1 && id.y < 9)
+	//{
+	//	d = 1.0f;
+	//	d = d * snoise(float3(id));
+	//	d += sin(id.x) + sin(id.y) + sin(id.z);
+	//	densityBuffer[id] = d * -0.5f;
+	//}
+	//else
+	//	densityBuffer[id] = d;
+
+	//Sphere
+	uint center = (ThreadGroups_X * NumThreadsPerGroup) / 2;
+	float radius = 15.f;
+
+	uint3 dist = uint3(center, center, center) - id;
+	float sqDis = dot(dist, dist);
+
+	if ( sqDis <= (radius * radius))
+		densityBuffer[id] = 1.0f;
 	else
-		densityBuffer[id] = d;
+		densityBuffer[id] = -1.0f;
+
+	////Terrain ... sort of
+	//float d = -1.0f;
+	//if (id.y == 0)
+	//	densityBuffer[id] = 1.0f;
+	//else if (id.y > 0 && id.y < 3)
+	//{
+	//	d = snoise(id);
+
+	//	d += snoise(uint3(id.x + 1, id.y, id.z));
+	//	d += snoise(uint3(id.x  - 1, id.y, id.z));
+
+	//	d += sin(id.x + id.y);
+	//	d += snoise(uint3(id.x, id.y - 1, id.z));
+
+	//	d += snoise(uint3(id.x, id.y, id.z + 1));
+	//	d += snoise(uint3(id.x, id.y, id.z - 1));
+
+	//	d = d / 7;
+
+	//	densityBuffer[id] = d;
+	//}
+	//else
+	//	densityBuffer[id] = d;
+
 }

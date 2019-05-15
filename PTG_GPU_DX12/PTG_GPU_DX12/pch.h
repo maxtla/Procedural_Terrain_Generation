@@ -52,8 +52,8 @@ struct CameraSettings
 struct AppCtx
 {
 	std::string wnd_title = "Procedural Terrain Generation with DirectX 12";
-	UINT width		= 1920U;
-	UINT height		= 1080U;
+	UINT width		= 1600U;
+	UINT height		= 900U;
 	HWND hwnd;
 
 	bool vsync		= false;

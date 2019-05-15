@@ -19,5 +19,14 @@ private:
 	UINT m_index = 0U;
 
 	std::vector<Chunk> m_chunks;
+
+	struct CBData
+	{
+		unsigned int tg_x = 1U;
+		unsigned int tg_y = 1U;
+		unsigned int tg_z = 1U;
+		unsigned int num_threads = 8U;
+		float isoValue = 0.f;
+	} m_cbData;
 };
 

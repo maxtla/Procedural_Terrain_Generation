@@ -24,6 +24,7 @@ cbuffer PerDispatchData : register(b2)
 	uint ThreadGroups_Y;
 	uint ThreadGroups_Z;
 	uint NumThreadsPerGroup;
+	float isoValue;
 };
 
 cbuffer PerChunkData : register(b1) //I need to fix DescriptorHeap so everything can be bound from the same heap
@@ -48,13 +49,13 @@ float3 CalculateNormal(uint3 index)
 		densityTexture.Load(float4(float3(index.x, index.y - 1, index.z), 0));
 	gradient.z = densityTexture.Load(float4(float3(index.x, index.y, index.z + 1), 0)) -
 		densityTexture.Load(float4(float3(index.x, index.y, index.z - 1), 0));
-	return normalize(gradient);
+	return -normalize(gradient);
 }
 // This function interpolates a vertex position between p1 and p2 with density values d1 and d2 respectivly
 Vertex CalculateVertex(float3 p1, float3 p2, float d1, float d2, float isoValue)
 {
 	float3 dir = (p2 - p1);
-	float s = (isoValue - d1) / (d2 - d1);
+	float s = ( isoValue - d1) / (d2 - d1);
 	float3 pos = p1 + s * dir; 
 
 	float3 nor1 = CalculateNormal(uint3(p1));
@@ -80,6 +81,7 @@ void CalculateNormals(inout Triangle t)
 }
 
 //largest possible product is 10*10*10 = 1000 since max threads per group is 1024 for shader model 5.0
+//Keep  it at a multiple of 8, this is good for the different architectures (Nvidia, AMD and Intel) 
 [numthreads(8,8,8)]
 void main(uint3 id : SV_DispatchThreadID)
 {
@@ -93,24 +95,23 @@ void main(uint3 id : SV_DispatchThreadID)
 	float3 localCoords[8]; // local coordinates for each corner within the chunk (local to each thread)
 
 	float3 corners[8];
-	corners[0] = float3(id);									//bottom left front
-	corners[1] = corners[0] + float3(0, 1, 0);		//top left front
-	corners[2] = corners[0] + float3(1, 1, 0);		//top right front
-	corners[3] = corners[0] + float3(1, 0, 0);		//bottom right front
+	corners[0] = float3(id);									//bottom left front		v0
+	corners[1] = corners[0] + float3(0, 1, 0);		//top left front				v1
+	corners[2] = corners[0] + float3(1, 1, 0);		//top right front			v2
+	corners[3] = corners[0] + float3(1, 0, 0);		//bottom right front	v3
 
-	corners[4] = corners[0] + float3(0, 0, 1);		//bottom left back
-	corners[5] = corners[0] + float3(0, 1, 1);		//top left back
-	corners[6] = corners[0] + float3(1, 1, 1);		//top right back
-	corners[7] = corners[0] + float3(1, 0, 1);		//bottom right back
+	corners[4] = corners[0] + float3(0, 0, 1);		//bottom left back		v4
+	corners[5] = corners[0] + float3(0, 1, 1);		//top left back				v5
+	corners[6] = corners[0] + float3(1, 1, 1);		//top right back			v6
+	corners[7] = corners[0] + float3(1, 0, 1);		//bottom right back		v7
 
-	float isoLevel = 0.f;
 	int caseNumber = 0;
 	for (int i = 0; i < 8; i++)
 	{
 		localCoords[i] = corners[i];
 		int3 index = int3(corners[i]);
 		cellDensity[i] = densityTexture.Load(int4(index, 0)).r;
-		if (cellDensity[i] <= isoLevel) caseNumber |= 1 << i;
+		if (cellDensity[i] > isoValue) caseNumber |= 1 << i;
 	}
 
 	int numPolys = 0;
@@ -133,15 +134,12 @@ void main(uint3 id : SV_DispatchThreadID)
 			float3 p2Local = localCoords[v2];
 
 			// linearly interpolate vertex between p1 and p2
-			Vertex pLocal = CalculateVertex(p1Local, p2Local, cellDensity[v1], cellDensity[v2], isoLevel);
+			Vertex pLocal = CalculateVertex(p1Local, p2Local, cellDensity[v1], cellDensity[v2], isoValue);
 			// convert from local to world coordinates
-	/*		Vertex vert;
-			vert.pos = localToWorldCoord(pLocal);
-			vert.nor = CalculateNormal(uint3(p1Local));*/
 			t.vertices[e] = pLocal;
 		}
 
-		//CalculateNormals(t);
+		//CalculateNormals(t); //Use this if we want vertex shading, otherwise "soft" shading is used
 		vertexBuffer[vertexBuffer.IncrementCounter()] = t;
 	}
 }

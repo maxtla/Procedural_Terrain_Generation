@@ -63,11 +63,13 @@ void MCStage::FillVertexBuffers(std::vector<TextureBuffer3D> &volumes, bool asyn
 	cmdAllo->Reset();
 	cmdList->Reset(cmdAllo, NULL);
 
-	UINT values[4] = { CHUNK_THREAD_GROUPS_X, CHUNK_THREAD_GROUPS_Y, CHUNK_THREAD_GROUPS_Z, NUM_THREADS_PER_GROUP };
+	m_cbData.tg_x = CHUNK_THREAD_GROUPS_X;
+	m_cbData.tg_y = CHUNK_THREAD_GROUPS_Y;
+	m_cbData.tg_z = CHUNK_THREAD_GROUPS_Z;
 	//Prepare pipeline
 	cmdList->SetComputeRootSignature(rs);
 	cmdList->SetDescriptorHeaps(1, (ID3D12DescriptorHeap*const*)&heap);
-	cmdList->SetComputeRoot32BitConstants(4, 4, (const void*)values, 0);
+	cmdList->SetComputeRoot32BitConstants(4, 5, (const void*)&m_cbData, 0);
 
 	m_rs.Apply(cmdList);
 
@@ -102,5 +104,7 @@ void MCStage::Update(float & dt)
 	ImGui::SliderInt(" X", (int*)&CHUNK_THREAD_GROUPS_X, 1, DENSITY_THREAD_GROUPS_X);
 	ImGui::SliderInt(" Y", (int*)&CHUNK_THREAD_GROUPS_Y, 1, DENSITY_THREAD_GROUPS_Y);
 	ImGui::SliderInt(" Z", (int*)&CHUNK_THREAD_GROUPS_Z, 1, DENSITY_THREAD_GROUPS_Z);
+	ImGui::Text("\nIsoValue");
+	ImGui::SliderFloat("", &m_cbData.isoValue, 0.0f, 1.0f, "%.3f");
 	ImGui::End();
 }

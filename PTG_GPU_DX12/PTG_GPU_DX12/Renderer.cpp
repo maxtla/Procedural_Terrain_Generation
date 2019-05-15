@@ -427,7 +427,7 @@ namespace D3D12
 		rootConstants[0].RegisterSpace = 0;
 		rootConstants[0].ShaderRegister = 0; //b0
 
-		rootConstants[1].Num32BitValues = 4; //ThreadGroups and NumofThreadsperGroup
+		rootConstants[1].Num32BitValues = 5; //modifiers
 		rootConstants[1].RegisterSpace = 0;
 		rootConstants[1].ShaderRegister = 2; //b2
 
